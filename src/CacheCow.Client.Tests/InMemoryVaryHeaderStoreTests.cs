@@ -1,21 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using NUnit.Framework;
-
-namespace CacheCow.Client.Tests
+﻿namespace CacheCow.Client.Tests
 {
+    using System.Collections.Generic;
+    using NUnit.Framework;
+
     public class InMemoryVaryHeaderStoreTests
     {
         private const string TestUrl = "/api/Test?a=1";
+
         [Test]
         public void Test_Insert_Get()
         {
             // arrange
             var store = new InMemoryVaryHeaderStore();
-            IEnumerable<String> headers = null;
-            var hdrs = new string[] {"a", "b"};
+            IEnumerable<string> headers = null;
+            var hdrs = new[] {"a", "b"};
 
             // act
             store.AddOrUpdate(TestUrl, hdrs);
@@ -32,8 +30,8 @@ namespace CacheCow.Client.Tests
         {
             // arrange
             var store = new InMemoryVaryHeaderStore();
-            IEnumerable<String> headers = null;
-            var hdrs = new string[] { "a", "b" };
+            IEnumerable<string> headers = null;
+            var hdrs = new[] {"a", "b"};
 
             // act
             store.AddOrUpdate(TestUrl, hdrs);
@@ -44,7 +42,6 @@ namespace CacheCow.Client.Tests
             Assert.IsFalse(result);
             Assert.IsNull(headers);
             Assert.IsTrue(tryRemove);
-            
         }
 
         [Test]
@@ -52,7 +49,7 @@ namespace CacheCow.Client.Tests
         {
             // arrange
             var store = new InMemoryVaryHeaderStore();
-            IEnumerable<String> headers = null;
+            IEnumerable<string> headers = null;
 
             // act
             var result = store.TryGetValue(TestUrl, out headers);
@@ -60,7 +57,6 @@ namespace CacheCow.Client.Tests
             // assert
             Assert.IsFalse(result);
             Assert.IsNull(headers);
-
         }
     }
 }

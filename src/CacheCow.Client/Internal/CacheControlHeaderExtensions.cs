@@ -1,16 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http.Headers;
-using System.Text;
-
-namespace CacheCow.Client.Internal
+﻿namespace CacheCow.Client.Internal
 {
+    using System.Net.Http.Headers;
+
     internal static class CacheControlHeaderExtensions
     {
         public static bool ShouldRevalidate(this CacheControlHeaderValue headerValue, bool defaultBehaviour)
         {
-            if (headerValue == null)
+            if(headerValue == null)
                 return false;
             return defaultBehaviour || headerValue.MustRevalidate || headerValue.NoCache;
         }
