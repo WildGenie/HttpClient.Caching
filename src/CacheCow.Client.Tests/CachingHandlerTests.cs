@@ -480,7 +480,7 @@ namespace CacheCow.Client.Tests
         }
 
         [Test]
-        [ExpectedException(typeof(NotImplementedException))]
+        //[ExpectedException(typeof(NotImplementedException))]
         public void DefaultExceptionPolicy_Throws_CacheStore_Exceptions()
         {
             // setup 

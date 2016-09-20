@@ -15,8 +15,8 @@ namespace CacheCow.Client.Tests
 	public class ResponseSerializationTests
 	{
 		[Test]
-		[Ignore]
-		public void IntegrationTest_Serialize()
+        [Ignore("blah")]
+        public void IntegrationTest_Serialize()
 		{
 			var httpClient = new HttpClient();
 			var httpResponseMessage = httpClient.GetAsync("http://google.com").Result;
@@ -28,8 +28,8 @@ namespace CacheCow.Client.Tests
 		}
 
 		[Test]
-		[Ignore]
-		public void IntegrationTest_Deserialize()
+        [Ignore("blah")]
+        public void IntegrationTest_Deserialize()
 		{	var fileStream = new FileStream("msg.bin", FileMode.Open);
 			var defaultHttpResponseMessageSerializer = new MessageContentHttpMessageSerializer();
 			var httpResponseMessage = defaultHttpResponseMessageSerializer.DeserializeToResponseAsync(fileStream).Result;
@@ -37,8 +37,8 @@ namespace CacheCow.Client.Tests
 		}
 
 		[Test]
-		[Ignore]
-		public void IntegrationTest_Serialize_Deserialize()
+        [Ignore("blah")]
+        public void IntegrationTest_Serialize_Deserialize()
 		{
 			
 			var httpClient = new HttpClient();

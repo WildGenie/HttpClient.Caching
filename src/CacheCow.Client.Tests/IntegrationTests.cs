@@ -16,7 +16,7 @@ namespace CacheCow.Client.Tests
 	public class IntegrationTests
 	{
 		[Test]
-		[Ignore]
+		[Ignore("blah")]
 		public void Test_GoogleImage_WorksOnFirstSecondRequestNotThird()
 		{
 			const string Url = "https://ssl.gstatic.com/gb/images/j_e6a6aca6.png";
@@ -34,8 +34,8 @@ namespace CacheCow.Client.Tests
 		}
 
 		[Test]
-		[Ignore]
-		public void Test_CarManager()
+        [Ignore("blah")]
+        public void Test_CarManager()
 		{
 			
 			const string Url = "http://carmanager.azurewebsites.net/api/Car";
