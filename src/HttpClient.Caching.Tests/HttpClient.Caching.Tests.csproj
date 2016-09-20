@@ -8,7 +8,7 @@
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>HttpClient.Caching</RootNamespace>
-    <AssemblyName>HttpClient.Caching</AssemblyName>
+    <AssemblyName>HttpClient.Caching.Tests</AssemblyName>
     <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -71,6 +71,12 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\HttpClient.Caching\HttpClient.Caching.csproj">
+      <Project>{33ec5fd1-b0b0-4311-b619-b0b3b81cace0}</Project>
+      <Name>HttpClient.Caching</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -1,4 +1,4 @@
-﻿namespace HttpClient.Caching.Tests
+﻿namespace HttpClient.Caching
 {
     using System;
     using System.Net.Http;
@@ -20,13 +20,15 @@
                 return Task.CompletedTask;
             });
             var appFunc = app.Build();
-            var handler = new OwinHttpMessageHandler(appFunc)
+            var owinHandler = new OwinHttpMessageHandler(appFunc)
             {
                 AllowAutoRedirect = true,
                 UseCookies = true
             };
 
-            var client = new HttpClient(handler)
+            var cachingHandler = new CachingHandler(owinHandler);
+
+            var client = new HttpClient(cachingHandler)
             {
                 BaseAddress = new Uri("http://example.com")
             };

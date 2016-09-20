@@ -29,7 +29,11 @@
             IgnoreExceptionPolicy = e => { };
         }
 
-        public CachingHandler(ICacheStore cacheStore = null, IVaryHeaderStore varyHeaderStore = null)
+        public CachingHandler(
+            HttpMessageHandler inner,
+            ICacheStore cacheStore = null,
+            IVaryHeaderStore varyHeaderStore = null)
+            :base(inner)
         {
             _cacheStore = cacheStore ?? new InMemoryCacheStore();
 
