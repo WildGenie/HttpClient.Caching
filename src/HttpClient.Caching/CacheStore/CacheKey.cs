@@ -1,4 +1,4 @@
-﻿namespace HttpClient.Caching
+﻿namespace HttpClient.Caching.CacheStore
 {
     using System;
     using System.Collections.Generic;

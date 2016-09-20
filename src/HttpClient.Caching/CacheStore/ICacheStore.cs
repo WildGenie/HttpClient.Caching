@@ -1,10 +1,9 @@
-﻿namespace HttpClient.Caching
+﻿namespace HttpClient.Caching.CacheStore
 {
-    using System;
     using System.Net.Http;
     using System.Threading.Tasks;
 
-    public interface ICacheStore : IDisposable
+    public interface ICacheStore
     {
         Task<bool> TryGetValue(CacheKey key, out HttpResponseMessage response);
 
