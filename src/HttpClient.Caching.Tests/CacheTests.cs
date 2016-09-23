@@ -5,7 +5,6 @@
     using System.Threading.Tasks;
     using Microsoft.Owin.Builder;
     using Owin;
-    using Xunit;
 
     public class CacheTests
     {
@@ -26,7 +25,10 @@
                 UseCookies = true
             };
 
-            var cachingHandler = new CachingHandler(owinHandler);
+            var cachingHandler = new CachingHandler
+            {
+                InnerHandler = owinHandler
+            };
 
             var client = new HttpClient(cachingHandler)
             {

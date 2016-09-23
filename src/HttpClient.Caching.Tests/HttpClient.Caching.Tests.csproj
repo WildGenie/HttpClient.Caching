@@ -73,7 +73,10 @@
     <Compile Include="Helper\DeepComparer.cs" />
     <Compile Include="Helper\ResponseHelper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SerialisationTests.cs" />
+    <Compile Include="CacheStore\RequestSerializationTests.cs" />
+    <Compile Include="CacheStore\ResponseSerializationTests.cs" />
+    <Compile Include="ResponseValidatorTests.cs" />
+    <Compile Include="CacheStore\SerialisationTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

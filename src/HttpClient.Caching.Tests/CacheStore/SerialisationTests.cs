@@ -1,10 +1,9 @@
-﻿namespace HttpClient.Caching
+﻿namespace HttpClient.Caching.CacheStore
 {
     using System.IO;
     using System.Linq;
     using System.Reflection;
     using System.Threading.Tasks;
-    using HttpClient.Caching.CacheStore;
     using HttpClient.Caching.Helper;
     using Shouldly;
     using Xunit;
