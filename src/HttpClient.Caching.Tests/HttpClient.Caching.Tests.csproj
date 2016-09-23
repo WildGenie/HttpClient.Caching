@@ -66,9 +66,14 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Data\Request.cs" />
+    <EmbeddedResource Include="Data\Response.cs" />
     <Compile Include="Headers\CachingHeaderTests.cs" />
     <Compile Include="CacheTests.cs" />
+    <Compile Include="Helper\DeepComparer.cs" />
+    <Compile Include="Helper\ResponseHelper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SerialisationTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -78,6 +83,9 @@
       <Project>{33ec5fd1-b0b0-4311-b619-b0b3b81cace0}</Project>
       <Name>HttpClient.Caching</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Helper\Headers.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

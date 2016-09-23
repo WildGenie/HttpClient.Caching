@@ -1,5 +1,6 @@
 ﻿namespace HttpClient.Caching.Headers
 {
+    using System;
     using System.Linq;
     using System.Net.Http;
     using System.Net.Http.Headers;
@@ -28,6 +29,30 @@
             }
 
             return header;
+        }
+
+        public static void Parse(this HttpHeaders httpHeaders, string headers)
+        {
+            if (httpHeaders == null)
+            {
+                throw new ArgumentNullException(nameof(httpHeaders));
+            }
+
+            if (headers == null)
+            {
+                throw new ArgumentNullException(nameof(headers));
+            }
+
+            foreach (var header in headers.Split(new[] { "\r\n" }, StringSplitOptions.RemoveEmptyEntries))
+            {
+                var indexOfColon = header.IndexOf(":");
+                var name = header.Substring(0, indexOfColon);
+                var value = header.Substring(indexOfColon + 1).Trim();
+                if (!httpHeaders.TryAddWithoutValidation(name, value))
+                {
+                    throw new InvalidOperationException($"Value {value} for header {name} not acceptable.");
+                }
+            }
         }
     }
 }
