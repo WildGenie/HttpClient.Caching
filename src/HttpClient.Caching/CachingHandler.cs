@@ -9,6 +9,7 @@
     using System.Threading;
     using System.Threading.Tasks;
     using HttpClient.Caching.CacheStore;
+    using HttpClient.Caching.Headers;
 
     public class CachingHandler : DelegatingHandler
     {
@@ -246,7 +247,7 @@
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,
             CancellationToken cancellationToken)
         {
-            var cacheCowHeader = new CacheCowHeader();
+            var cacheCowHeader = new CachingHeader();
             var uri = request.RequestUri.ToString();
 
             //TraceWriter.WriteLine("{0} - Starting SendAsync", TraceLevel.Verbose, request.RequestUri.ToString());
@@ -301,7 +302,7 @@
                 if(validationResultForCachedResponse == ResponseValidationResult.OK)
                 {
                     cacheCowHeader.RetrievedFromCache = true;
-                    return cachedResponse.AddCacheCowHeader(cacheCowHeader);
+                    return cachedResponse.AddCachingHeader(cacheCowHeader);
                     // EXIT !!
                 }
 
@@ -311,7 +312,7 @@
                     cacheCowHeader.WasStale = true;
                     var isFreshOrStaleAcceptable = IsFreshOrStaleAcceptable(cachedResponse, request);
                     if(isFreshOrStaleAcceptable.HasValue && isFreshOrStaleAcceptable.Value) // similar to OK
-                        return cachedResponse.AddCacheCowHeader(cacheCowHeader);
+                        return cachedResponse.AddCachingHeader(cacheCowHeader);
                     validationResultForCachedResponse = ResponseValidationResult.MustRevalidate; // revalidate
                 }
 
@@ -357,7 +358,7 @@
 
                 UpdateCachedResponse(cacheKey, cachedResponse, serverResponse, _cacheStore);
                 ConsumeAndDisposeResponse(serverResponse);
-                return cachedResponse.AddCacheCowHeader(cacheCowHeader); // EXIT !! _______________
+                return cachedResponse.AddCachingHeader(cacheCowHeader); // EXIT !! _______________
             }
 
             var validationResult = ResponseValidator(serverResponse);
@@ -420,16 +421,16 @@
             /* TraceWriter.WriteLine("{0} - Before returning response",
                  TraceLevel.Verbose, request.RequestUri.ToString());*/
 
-            return serverResponse.AddCacheCowHeader(cacheCowHeader);
+            return serverResponse.AddCachingHeader(cacheCowHeader);
         }
 
-        private void DoPutValidation(HttpRequestMessage request, CacheCowHeader cacheCowHeader,
+        private void DoPutValidation(HttpRequestMessage request, CachingHeader cachingHeader,
             HttpResponseMessage cachedResponse)
         {
             // add headers for a cache validation. First check ETag since is better 
             if(UseConditionalPut)
             {
-                cacheCowHeader.CacheValidationApplied = true;
+                cachingHeader.CacheValidationApplied = true;
                 if(cachedResponse.Headers.ETag != null)
                     request.Headers.Add(HttpHeaderNames.IfMatch,
                         cachedResponse.Headers.ETag.ToString());
@@ -468,11 +469,11 @@
             store.AddOrUpdate(cacheKey, cachedResponse);
         }
 
-        private static void DoCacheValidationForGet(HttpRequestMessage request, CacheCowHeader cacheCowHeader,
+        private static void DoCacheValidationForGet(HttpRequestMessage request, CachingHeader cachingHeader,
             HttpResponseMessage cachedResponse)
         {
-            cacheCowHeader.CacheValidationApplied = true;
-            cacheCowHeader.WasStale = true;
+            cachingHeader.CacheValidationApplied = true;
+            cachingHeader.WasStale = true;
 
             // add headers for a cache validation. First check ETag since is better 
             if(cachedResponse.Headers.ETag != null)

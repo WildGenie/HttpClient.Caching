@@ -1,10 +1,10 @@
-﻿namespace HttpClient.Caching
+﻿namespace HttpClient.Caching.Headers
 {
     using System;
     using System.Reflection;
     using System.Text;
 
-    public class CacheCowHeader
+    public class CachingHeader
     {
         // NOTE: public const has problems such as 
         // if changed, all dependent libraries have to be recompiled
@@ -13,24 +13,19 @@
 
         public const string Name = "x-cachecow";
 
-        public CacheCowHeader()
-        {
-            Version = Assembly.GetExecutingAssembly()
-                .GetName().Version.ToString();
-        }
-
         public bool? WasStale { get; set; }
-        public bool? DidNotExist { get; set; }
-        public bool? NotCacheable { get; set; }
-        public bool? CacheValidationApplied { get; set; }
-        public bool? RetrievedFromCache { get; set; }
 
-        public string Version { get; private set; }
+        public bool? DidNotExist { get; set; }
+
+        public bool? NotCacheable { get; set; }
+
+        public bool? CacheValidationApplied { get; set; }
+
+        public bool? RetrievedFromCache { get; set; }
 
         public override string ToString()
         {
             var sb = new StringBuilder();
-            sb.Append(Version);
             AddToStringBuilder(sb, WasStale, ExtensionNames.WasStale);
             AddToStringBuilder(sb, NotCacheable, ExtensionNames.NotCacheable);
             AddToStringBuilder(sb, DidNotExist, ExtensionNames.DidNotExist);
@@ -41,7 +36,7 @@
 
         private void AddToStringBuilder(StringBuilder sb, bool? property, string extensionName)
         {
-            if(property != null)
+            if (property != null)
             {
                 sb.Append(';');
                 sb.Append(extensionName);
@@ -50,31 +45,34 @@
             }
         }
 
-        public static bool TryParse(string value, out CacheCowHeader cacheCowHeader)
+        public static bool TryParse(string value, out CachingHeader cachingHeader)
         {
-            cacheCowHeader = null;
+            cachingHeader = null;
 
-            if(value == null)
-                return false;
-
-            if(value == string.Empty)
-                return false;
-
-            cacheCowHeader = new CacheCowHeader();
-            var chunks = value.Split(new[] {";"}, StringSplitOptions.None);
-            cacheCowHeader.Version = chunks[0];
-
-            for(var i = 1; i < chunks.Length; i++)
+            if (value == null)
             {
-                cacheCowHeader.WasStale = cacheCowHeader.WasStale ?? ParseNameValue(chunks[i], ExtensionNames.WasStale);
-                cacheCowHeader.CacheValidationApplied = cacheCowHeader.CacheValidationApplied ??
-                                                        ParseNameValue(chunks[i], ExtensionNames.CacheValidationApplied);
-                cacheCowHeader.NotCacheable = cacheCowHeader.NotCacheable ??
-                                              ParseNameValue(chunks[i], ExtensionNames.NotCacheable);
-                cacheCowHeader.DidNotExist = cacheCowHeader.DidNotExist ??
-                                             ParseNameValue(chunks[i], ExtensionNames.DidNotExist);
-                cacheCowHeader.RetrievedFromCache = cacheCowHeader.RetrievedFromCache ??
-                                                    ParseNameValue(chunks[i], ExtensionNames.RetrievedFromCache);
+                return false;
+            }
+
+            if (value == string.Empty)
+            {
+                return false;
+            }
+
+            cachingHeader = new CachingHeader();
+            var chunks = value.Split(new[] {";"}, StringSplitOptions.None);
+
+            foreach (var chunk in chunks)
+            {
+                cachingHeader.WasStale = cachingHeader.WasStale ?? ParseNameValue(chunk, ExtensionNames.WasStale);
+                cachingHeader.CacheValidationApplied = cachingHeader.CacheValidationApplied ??
+                                                       ParseNameValue(chunk, ExtensionNames.CacheValidationApplied);
+                cachingHeader.NotCacheable = cachingHeader.NotCacheable ??
+                                             ParseNameValue(chunk, ExtensionNames.NotCacheable);
+                cachingHeader.DidNotExist = cachingHeader.DidNotExist ??
+                                            ParseNameValue(chunk, ExtensionNames.DidNotExist);
+                cachingHeader.RetrievedFromCache = cachingHeader.RetrievedFromCache ??
+                                                   ParseNameValue(chunk, ExtensionNames.RetrievedFromCache);
             }
 
             return true;
@@ -82,22 +80,28 @@
 
         private static bool? ParseNameValue(string entry, string name)
         {
-            if(string.IsNullOrEmpty(entry))
+            if (string.IsNullOrEmpty(entry))
                 return null;
 
             var chunks = entry.Split('=');
-            if(chunks.Length != 2)
+            if (chunks.Length != 2)
+            {
                 return null;
+            }
 
             chunks[0] = chunks[0].Trim();
             chunks[1] = chunks[1].Trim();
 
-            if(chunks[0].ToLower() != name)
+            if (chunks[0].ToLower() != name)
+            {
                 return null;
+            }
 
             var result = false;
-            if(!bool.TryParse(chunks[1], out result))
+            if (!bool.TryParse(chunks[1], out result))
+            {
                 return null;
+            }
 
             return result;
         }

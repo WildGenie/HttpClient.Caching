@@ -46,7 +46,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CacheControlHeaderExtensions.cs" />
-    <Compile Include="CacheCowHeader.cs" />
+    <Compile Include="Headers\CachingHeader.cs" />
     <Compile Include="CacheStore\BasicExtensions.cs" />
     <Compile Include="CacheStore\CacheKey.cs" />
     <Compile Include="CacheStore\IHttpMessageSerializerAsync.cs" />
@@ -57,7 +57,7 @@
     <Compile Include="CacheStore\ICacheStore.cs" />
     <Compile Include="CacheStore\InMemoryCacheStore.cs" />
     <Compile Include="HttpHeaderNames.cs" />
-    <Compile Include="HttpResponseMessageExtensions.cs" />
+    <Compile Include="Headers\HttpResponseExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ResponseValidationResult.cs" />
   </ItemGroup>
