@@ -27,8 +27,8 @@
             if(response.Content != null)
             {
                 await response.Content.LoadIntoBufferAsync();
-                var httpMessageContent2 = new HttpMessageContent(response);
-                var buffer = await httpMessageContent2.ReadAsByteArrayAsync().ConfigureAwait(false);
+                var messageContent = new HttpMessageContent(response);
+                var buffer = await messageContent.ReadAsByteArrayAsync().ConfigureAwait(false);
                 await stream.WriteAsync(buffer, 0, buffer.Length).ConfigureAwait(false);
             }
             else
@@ -44,8 +44,8 @@
             if(request.Content != null)
             {
                 await request.Content.LoadIntoBufferAsync();
-                var httpMessageContent2 = new HttpMessageContent(request);
-                var buffer = await httpMessageContent2.ReadAsByteArrayAsync();
+                var messageContent = new HttpMessageContent(request);
+                var buffer = await messageContent.ReadAsByteArrayAsync();
                 await stream.WriteAsync(buffer, 0, buffer.Length);
             }
             else

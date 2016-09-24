@@ -68,6 +68,9 @@
   <ItemGroup>
     <EmbeddedResource Include="Data\Request.cs" />
     <EmbeddedResource Include="Data\Response.cs" />
+    <Compile Include="CacheStore\InMemoryVaryHeaderStoreTests.cs" />
+    <Compile Include="CachingHandlerTests.cs" />
+    <Compile Include="DummyMessageHandler.cs" />
     <Compile Include="Headers\CachingHeaderTests.cs" />
     <Compile Include="CacheTests.cs" />
     <Compile Include="Helper\DeepComparer.cs" />
