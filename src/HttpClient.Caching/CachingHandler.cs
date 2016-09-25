@@ -2,7 +2,6 @@
 {
     using System;
     using System.Collections.Generic;
-    using System.Diagnostics;
     using System.Linq;
     using System.Net;
     using System.Net.Http;
@@ -137,7 +136,7 @@
 
         public string[] DefaultVaryHeaders { get; set; }
 
-        public string[] StarVaryHeaders { get; set; } // TODO: populate and use
+/*        public string[] StarVaryHeaders { get; set; } // TODO: populate and use*/
 
         /// <summary>
         ///     Whether to use cache's ETag or Last-Modified
@@ -196,16 +195,16 @@
             var staleness = TimeSpan.Zero; // negative = fresh, positive = stale
 
             if(cachedResponse == null)
-                throw new ArgumentNullException("cachedResponse");
+                throw new ArgumentNullException(nameof(cachedResponse));
 
             if(request == null)
-                throw new ArgumentNullException("request");
+                throw new ArgumentNullException(nameof(request));
 
             if(cachedResponse.Content == null)
                 return null;
 
+            // Date should have a value
             var responseDate = cachedResponse.Headers.Date ?? cachedResponse.Content.Headers.LastModified;
-                // Date should have a value
             if(responseDate == null)
                 return null;
 
@@ -459,12 +458,12 @@
                     TraceLevel.Verbose);*/
                 cachedResponse.Headers.CacheControl = serverResponse.Headers.CacheControl;
             }
-            else
+            /* else
             {
-               /* TraceWriter.WriteLine(
+               TraceWriter.WriteLine(
                     "CachingHandler.UpdateCachedResponse - CacheControl missing from server. Applying sliding expiration. Date => " +
-                    DateTimeOffset.UtcNow, TraceLevel.Verbose);*/
-            }
+                    DateTimeOffset.UtcNow, TraceLevel.Verbose);
+            }*/
 
             cachedResponse.Headers.Date = DateTimeOffset.UtcNow; // very important
             store.AddOrUpdate(cacheKey, cachedResponse);

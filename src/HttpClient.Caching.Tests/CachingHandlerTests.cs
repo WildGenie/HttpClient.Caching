@@ -17,18 +17,16 @@
         private const string ETagValue = "\"abcdef\"";
         private HttpClient _client;
         private readonly ICacheStore _cacheStore = new InMemoryCacheStore();
-        private readonly DummyMessageHandler _messageHandler;
-        private CachingHandler _cachingHandler;
-
+        private readonly FakeServerMessageHandler _serverMessageHandler;
 
         public CachingHandlerTests()
         {
-            _messageHandler = new DummyMessageHandler();
-            _cachingHandler = new CachingHandler(_cacheStore)
+            _serverMessageHandler = new FakeServerMessageHandler();
+            var cachingHandler = new CachingHandler(_cacheStore)
             {
-                InnerHandler = _messageHandler
+                InnerHandler = _serverMessageHandler
             };
-            _client = new HttpClient(_cachingHandler);
+            _client = new HttpClient(cachingHandler);
         }
 
         private HttpResponseMessage GetOkMessage(bool mustRevalidate = false)
@@ -52,11 +50,11 @@
             // setup 
             var request = new HttpRequestMessage(HttpMethod.Put, DummyUrl);
             var responseFromServer = GetOkMessage();
-            _messageHandler.Response = responseFromServer;
+            _serverMessageHandler.Response = responseFromServer;
             var cacheStore = new FaultyCacheStore();
             var cachingHandler = new CachingHandler(cacheStore)
             {
-                InnerHandler = _messageHandler
+                InnerHandler = _serverMessageHandler
             };
             _client = new HttpClient(cachingHandler);
 
@@ -68,13 +66,17 @@
         [Fact]
         public async Task Get_Must_Revalidate_Etag_NotModified()
         {
-            // setup 
             var request = new HttpRequestMessage(HttpMethod.Get, DummyUrl);
+
             var responseFromCache = GetOkMessage(true);
             responseFromCache.Headers.ETag = new EntityTagHeaderValue(ETagValue);
             responseFromCache.Content.Headers.Expires = DateTime.Now.Subtract(TimeSpan.FromSeconds(10));
+            await _cacheStore.AddOrUpdate(new CacheKey(DummyUrl), responseFromCache);
+
             var responseFromServer = new HttpResponseMessage(HttpStatusCode.NotModified);
-            _messageHandler.Response = responseFromServer;
+            _serverMessageHandler.Response = responseFromServer;
+
+
             /* _cacheStore.Expect(
                      x => x.TryGetValue(Arg<CacheKey>.Is.Anything, out Arg<HttpResponseMessage>.Out(responseFromCache).Dummy))
                  .Return(true);
@@ -82,14 +84,11 @@
 
             //_mockRepository.ReplayAll();
 
-            // run
             var responseReturned = await _client.SendAsync(request);
             var header = responseReturned.Headers.Single(x => x.Key == CachingHeader.Name);
             CachingHeader cachingHeader;
             CachingHeader.TryParse(header.Value.First(), out cachingHeader);
 
-            // verify
-            //_mockRepository.VerifyAll();
             cachingHeader.ShouldNotBeNull();
             ETagValue.ShouldBe(request.Headers.IfNoneMatch.First().Tag);
             responseFromCache.ShouldBe(responseReturned);
@@ -108,7 +107,7 @@
             var responseFromServer = GetOkMessage();
             responseFromCache.Content.Headers.Expires = DateTime.Now.Subtract(TimeSpan.FromSeconds(10));
 
-            _messageHandler.Response = responseFromServer;
+            _serverMessageHandler.Response = responseFromServer;
             _cacheStore.Expect(x => x.TryGetValue(Arg<CacheKey>.Is.Anything,
                 out Arg<HttpResponseMessage>.Out(responseFromCache).Dummy)).Return(true);
             _cacheStore.Expect(x => x.AddOrUpdate(Arg<CacheKey>.Is.Anything,
@@ -142,7 +141,7 @@
             responseFromCache.Content.Headers.Expires = DateTime.Now.Subtract(TimeSpan.FromSeconds(10));
 
             var responseFromServer = new HttpResponseMessage(HttpStatusCode.NotModified);
-            _messageHandler.Response = responseFromServer;
+            _serverMessageHandler.Response = responseFromServer;
             _cacheStore.Expect(
                     x => x.TryGetValue(Arg<CacheKey>.Is.Anything, out Arg<HttpResponseMessage>.Out(responseFromCache).Dummy))
                 .Return(true);
@@ -178,7 +177,7 @@
             var responseFromServer = GetOkMessage();
             responseFromCache.Content.Headers.Expires = DateTime.Now.Subtract(TimeSpan.FromSeconds(10));
 
-            _messageHandler.Response = responseFromServer;
+            _serverMessageHandler.Response = responseFromServer;
             _cacheStore.Expect(x => x.TryGetValue(Arg<CacheKey>.Is.Anything,
                 out Arg<HttpResponseMessage>.Out(responseFromCache).Dummy)).Return(true);
             _cacheStore.Expect(x => x.AddOrUpdate(Arg<CacheKey>.Is.Anything,
@@ -212,7 +211,7 @@
             var responseFromServer = GetOkMessage();
             responseFromCache.Content.Headers.Expires = DateTime.Now.Subtract(TimeSpan.FromSeconds(10));
 
-            _messageHandler.Response = responseFromServer;
+            _serverMessageHandler.Response = responseFromServer;
             _cacheStore.Expect(x => x.TryGetValue(Arg<CacheKey>.Is.Anything,
                 out Arg<HttpResponseMessage>.Out(responseFromCache).Dummy)).Return(true);
             _cacheStore.Expect(x => x.AddOrUpdate(Arg<CacheKey>.Is.Anything,
@@ -247,7 +246,7 @@
             var responseFromServer = GetOkMessage();
             responseFromCache.Content.Headers.Expires = DateTime.Now.Subtract(TimeSpan.FromSeconds(10));
 
-            _messageHandler.Response = responseFromServer;
+            _serverMessageHandler.Response = responseFromServer;
             _cacheStore.Expect(x => x.TryGetValue(Arg<CacheKey>.Is.Anything,
                 out Arg<HttpResponseMessage>.Out(responseFromCache).Dummy)).Return(true);
 
@@ -282,7 +281,7 @@
                 Content = new ByteArrayContent(new byte[256])
             };
 
-            _messageHandler.Response = responseFromServer;
+            _serverMessageHandler.Response = responseFromServer;
             _cacheStore.Expect(
                     x => x.TryGetValue(Arg<CacheKey>.Is.Anything, out Arg<HttpResponseMessage>.Out(responseFromCache).Dummy))
                 .Return(true);
@@ -317,7 +316,7 @@
             // setup 
             var request = new HttpRequestMessage(HttpMethod.Get, DummyUrl);
             var response = GetOkMessage();
-            _messageHandler.Response = response;
+            _serverMessageHandler.Response = response;
             _cacheStore.Expect(x => x.TryGetValue(Arg<CacheKey>.Is.Anything,
                 out Arg<HttpResponseMessage>.Out(null).Dummy)).Return(false);
             _cacheStore.Expect(x => x.AddOrUpdate(Arg<CacheKey>.Is.Anything,
@@ -344,7 +343,7 @@
             // setup 
             var request = new HttpRequestMessage(HttpMethod.Get, DummyUrl);
             var response = GetOkMessage();
-            _messageHandler.Response = response;
+            _serverMessageHandler.Response = response;
             _cacheStore.Expect(x => x.TryGetValue(Arg<CacheKey>.Is.Anything,
                 out Arg<HttpResponseMessage>.Out(response).Dummy)).Return(true);
 
@@ -377,7 +376,7 @@
             var responseFromServer = GetOkMessage();
             responseFromServer.StatusCode = HttpStatusCode.NotModified;
 
-            _messageHandler.Response = responseFromServer;
+            _serverMessageHandler.Response = responseFromServer;
             _cacheStore.Expect(x => x.TryGetValue(Arg<CacheKey>.Is.Anything,
                 out Arg<HttpResponseMessage>.Out(responseFromCache).Dummy)).Return(true);
             _cacheStore.Expect(
@@ -407,11 +406,11 @@
             // setup 
             var request = new HttpRequestMessage(HttpMethod.Put, DummyUrl);
             var responseFromServer = GetOkMessage();
-            _messageHandler.Response = responseFromServer;
+            _serverMessageHandler.Response = responseFromServer;
             _cacheStore = new FaultyCacheStore();
             _cachingHandler = new CachingHandler(_cacheStore)
             {
-                InnerHandler = _messageHandler
+                InnerHandler = _serverMessageHandler
             };
             _cachingHandler.ExceptionHandler = CachingHandler.IgnoreExceptionPolicy;
             _client = new HttpClient(_cachingHandler);
@@ -430,7 +429,7 @@
         {
             var request = new HttpRequestMessage(HttpMethod.Delete, DummyUrl);
             var httpResponseMessage = new HttpResponseMessage(HttpStatusCode.OK);
-            _messageHandler.Response = httpResponseMessage;
+            _serverMessageHandler.Response = httpResponseMessage;
             var task = _client.SendAsync(request);
             var response = task.Result;
 
@@ -446,7 +445,7 @@
             request.Headers.CacheControl = new CacheControlHeaderValue();
             request.Headers.CacheControl.NoStore = true;
             var httpResponseMessage = new HttpResponseMessage(HttpStatusCode.OK);
-            _messageHandler.Response = httpResponseMessage;
+            _serverMessageHandler.Response = httpResponseMessage;
             var task = _client.SendAsync(request);
             var response = task.Result;
 
@@ -462,7 +461,7 @@
             var responseFromCache = GetOkMessage(true);
             responseFromCache.Headers.ETag = new EntityTagHeaderValue(ETagValue);
             var responseFromServer = new HttpResponseMessage(HttpStatusCode.NotModified);
-            _messageHandler.Response = responseFromServer;
+            _serverMessageHandler.Response = responseFromServer;
             _cacheStore.Expect(x => x.TryGetValue(Arg<CacheKey>.Is.Anything,
                 out Arg<HttpResponseMessage>.Out(responseFromCache).Dummy)).Return(true);
 
@@ -488,7 +487,7 @@
             var responseFromCache = GetOkMessage(true);
             responseFromCache.Content.Headers.LastModified = lastModified;
             var responseFromServer = GetOkMessage();
-            _messageHandler.Response = responseFromServer;
+            _serverMessageHandler.Response = responseFromServer;
             _cacheStore.Expect(x => x.TryGetValue(Arg<CacheKey>.Is.Anything,
                 out Arg<HttpResponseMessage>.Out(responseFromCache).Dummy)).Return(true);
 
