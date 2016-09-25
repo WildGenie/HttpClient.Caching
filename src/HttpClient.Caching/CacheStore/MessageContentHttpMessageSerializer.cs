@@ -22,7 +22,7 @@
             _bufferContent = bufferContent;
         }
 
-        public async Task SerializeAsync(HttpResponseMessage response, Stream stream)
+        public async Task Serialize(HttpResponseMessage response, Stream stream)
         {
             if(response.Content != null)
             {
@@ -39,7 +39,7 @@
             }
         }
 
-        public async Task SerializeAsync(HttpRequestMessage request, Stream stream)
+        public async Task Serialize(HttpRequestMessage request, Stream stream)
         {
             if(request.Content != null)
             {
@@ -56,7 +56,7 @@
             }
         }
 
-        public Task<HttpResponseMessage> DeserializeToResponseAsync(Stream stream)
+        public Task<HttpResponseMessage> DeserializeToResponse(Stream stream)
         {
             var response = new HttpResponseMessage();
             response.Content = new StreamContent(stream);
@@ -64,12 +64,14 @@
             return response.Content.ReadAsHttpResponseMessageAsync();
         }
 
-        public Task<HttpRequestMessage> DeserializeToRequestAsync(Stream stream)
+        public async Task<HttpRequestMessage> DeserializeToRequest(Stream stream)
         {
-            var request = new HttpRequestMessage();
-            request.Content = new StreamContent(stream);
+            var request = new HttpRequestMessage
+            {
+                Content = new StreamContent(stream)
+            };
             request.Content.Headers.Add("Content-Type", "application/http;msgtype=request");
-            return request.Content.ReadAsHttpRequestMessageAsync();
+            return await request.Content.ReadAsHttpRequestMessageAsync();
         }
     }
 }

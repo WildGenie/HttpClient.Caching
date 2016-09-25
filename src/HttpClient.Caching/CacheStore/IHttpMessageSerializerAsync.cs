@@ -6,12 +6,12 @@
 
     public interface IHttpMessageSerializerAsync
     {
-        Task SerializeAsync(HttpResponseMessage response, Stream stream);
+        Task Serialize(HttpResponseMessage response, Stream stream);
 
-        Task SerializeAsync(HttpRequestMessage request, Stream stream);
+        Task Serialize(HttpRequestMessage request, Stream stream);
 
-        Task<HttpResponseMessage> DeserializeToResponseAsync(Stream stream);
+        Task<HttpResponseMessage> DeserializeToResponse(Stream stream);
 
-        Task<HttpRequestMessage> DeserializeToRequestAsync(Stream stream);
+        Task<HttpRequestMessage> DeserializeToRequest(Stream stream);
     }
 }

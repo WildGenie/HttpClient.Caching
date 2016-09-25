@@ -33,7 +33,7 @@
             {
                 return null;
             }
-            return  await _messageSerializer.DeserializeToResponseAsync(new MemoryStream((byte[]) result));
+            return  await _messageSerializer.DeserializeToResponse(new MemoryStream((byte[]) result));
         }
 
         public async Task AddOrUpdate(CacheKey key, HttpResponseMessage response)
@@ -42,7 +42,7 @@
             var req = response.RequestMessage;
             response.RequestMessage = null;
             var memoryStream = new MemoryStream();
-            await _messageSerializer.SerializeAsync(response, memoryStream);
+            await _messageSerializer.Serialize(response, memoryStream);
             response.RequestMessage = req;
             _responseCache.Set(key.HashBase64, memoryStream.ToArray(), GetExpiry(response));
         }

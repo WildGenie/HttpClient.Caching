@@ -66,10 +66,10 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Data\Request.cs" />
-    <EmbeddedResource Include="Data\Response.cs" />
+    <EmbeddedResource Include="Data\Response.dat" />
     <Compile Include="CacheStore\InMemoryVaryHeaderStoreTests.cs" />
     <Compile Include="CachingHandlerTests.cs" />
+    <EmbeddedResource Include="Data\Request.dat" />
     <Compile Include="DummyMessageHandler.cs" />
     <Compile Include="Headers\CachingHeaderTests.cs" />
     <Compile Include="CacheTests.cs" />

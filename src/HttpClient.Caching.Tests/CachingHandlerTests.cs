@@ -16,9 +16,10 @@
         private const string DummyUrl = "http://myserver/api/dummy";
         private const string ETagValue = "\"abcdef\"";
         private HttpClient _client;
-        private ICacheStore _cacheStore;
+        private readonly ICacheStore _cacheStore = new InMemoryCacheStore();
         private readonly DummyMessageHandler _messageHandler;
         private CachingHandler _cachingHandler;
+
 
         public CachingHandlerTests()
         {

@@ -16,10 +16,10 @@
             requestMessage.Headers.Range = new RangeHeaderValue(0, 1) {Unit = "custom"};
             var serializer = new MessageContentHttpMessageSerializer();
             var memoryStream = new MemoryStream();
-            await serializer.SerializeAsync(requestMessage, memoryStream);
+            await serializer.Serialize(requestMessage, memoryStream);
             memoryStream.Position = 0;
 
-            var request = await serializer.DeserializeToRequestAsync(memoryStream);
+            var request = await serializer.DeserializeToRequest(memoryStream);
 
             requestMessage.Headers.Range.Unit.ShouldBe(request.Headers.Range.Unit);
         }
