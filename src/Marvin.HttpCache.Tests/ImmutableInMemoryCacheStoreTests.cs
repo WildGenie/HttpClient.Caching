@@ -16,9 +16,9 @@
             var resp = new HttpResponseMessage();
 
             var cacheKey = new CacheKey("key", null);
-            await store.SetAsync(cacheKey, new CacheEntry(resp));
+            await store.Set(cacheKey, new CacheEntry(resp));
 
-            var fromCache = await store.GetAsync(new CacheKey("key", null));
+            var fromCache = await store.Get(new CacheKey("key", null));
 
             fromCache.HttpResponse.ShouldBe(resp);
         }
@@ -31,14 +31,14 @@
 
             var resp = new HttpResponseMessage();
             var cacheKey = new CacheKey("key", null);
-            await store.SetAsync(cacheKey, new CacheEntry(resp));
+            await store.Set(cacheKey, new CacheEntry(resp));
 
             var respNew = new HttpResponseMessage();
 
             // overwrite
-            await store.SetAsync(cacheKey, new CacheEntry(respNew));
+            await store.Set(cacheKey, new CacheEntry(respNew));
 
-            var fromCache = await store.GetAsync(cacheKey);
+            var fromCache = await store.Get(cacheKey);
 
             fromCache.HttpResponse.ShouldBe(respNew);
         }
@@ -55,11 +55,11 @@
             var cacheKey = new CacheKey("key", null);
             var cacheKey2 = new CacheKey("key2", null);
 
-            await store.SetAsync(cacheKey, new CacheEntry(resp));
-            await store.SetAsync(cacheKey2, new CacheEntry(resp2));
+            await store.Set(cacheKey, new CacheEntry(resp));
+            await store.Set(cacheKey2, new CacheEntry(resp2));
 
-            var fromCache = await store.GetAsync(cacheKey);
-            var fromCache2 = await store.GetAsync(cacheKey2);
+            var fromCache = await store.Get(cacheKey);
+            var fromCache2 = await store.Get(cacheKey2);
 
             fromCache.HttpResponse.ShouldBe(resp);
             fromCache2.HttpResponse.ShouldBe(resp2);
@@ -73,9 +73,9 @@
             var resp = new HttpResponseMessage();
             var cacheKey = new CacheKey("key", null);
 
-            await store.SetAsync(cacheKey, new CacheEntry(resp));
+            await store.Set(cacheKey, new CacheEntry(resp));
 
-            var fromCache = await store.GetAsync("key2");
+            var fromCache = await store.Get("key2");
 
             fromCache.ShouldBeNull();
         }
@@ -85,7 +85,7 @@
         {
             var store = new ImmutableInMemoryCacheStore();
             var cacheKey = new CacheKey("key", null);
-            var fromCache = await store.GetAsync(cacheKey);
+            var fromCache = await store.Get(cacheKey);
 
             fromCache.ShouldBe(default(CacheEntry));
         }
@@ -98,11 +98,11 @@
 
             var resp = new HttpResponseMessage();
             var cacheKey = new CacheKey("key", null);
-            await store.SetAsync(cacheKey, new CacheEntry(resp));
+            await store.Set(cacheKey, new CacheEntry(resp));
 
-            await store.ClearAsync();
+            await store.Clear();
 
-            var fromCache = await store.GetAsync(cacheKey);
+            var fromCache = await store.Get(cacheKey);
 
             fromCache.ShouldBe(default(CacheEntry));
         }
@@ -115,9 +115,9 @@
             var resp = new HttpResponseMessage();
 
             var cacheKey = new CacheKey("key", null);
-            await store.SetAsync(cacheKey, new CacheEntry(resp));
+            await store.Set(cacheKey, new CacheEntry(resp));
 
-            var fromCache = await store.GetAsync(cacheKey);
+            var fromCache = await store.Get(cacheKey);
 
             fromCache.HttpResponse.ShouldBe(resp);
         }

@@ -5,6 +5,7 @@
     using System.Net;
     using System.Net.Http;
     using System.Net.Http.Headers;
+    using System.Threading.Tasks;
     using Marvin.HttpCache.Store;
     using Marvin.HttpCache.Tests.Mock;
     using Shouldly;
@@ -48,7 +49,7 @@
         }
 
         [Fact]
-        public void GetFromCacheStoreNoRevalidate()
+        public async Task GetFromCacheStoreNoRevalidate()
         {
             // first GET: insert in cache
             var req = new HttpRequestMessage(HttpMethod.Get, TestUri);
@@ -57,14 +58,14 @@
 
             _mockHandler.Response = resp;
 
-            var result = httpClient.SendAsync(req).Result;
+            var result = await httpClient.SendAsync(req);
 
             // second GET: get from cache
             var req2 = new HttpRequestMessage(HttpMethod.Get, TestUri);
-            var result2 = httpClient.SendAsync(req2).Result;
+            var result2 = await httpClient.SendAsync(req2);
 
             // get from cache. Must match response, result and second result
-            var fromCache = _store.GetAsync(new CacheKey(TestUri)).Result;
+            var fromCache = await _store.Get(new CacheKey(TestUri));
 
             result.ShouldBe(fromCache.HttpResponse);
             result.ShouldBe(resp);
@@ -72,7 +73,7 @@
         }
 
         [Fact]
-        public void GetShouldInsertInCacheStore()
+        public async Task GetShouldInsertInCacheStore()
         {
             var req = new HttpRequestMessage(HttpMethod.Get, TestUri);
             var resp = GetResponseMessage(false);
@@ -80,17 +81,17 @@
 
             _mockHandler.Response = resp;
 
-            var result = httpClient.SendAsync(req).Result;
+            var result = await httpClient.SendAsync(req);
 
             // result should be in cache
-            var fromCache = _store.GetAsync(new CacheKey(TestUri)).Result;
+            var fromCache = await _store.Get(new CacheKey(TestUri));
 
             result.ShouldBe(fromCache.HttpResponse);
             result.ShouldBe(result);
         }
 
         [Fact]
-        public void GetStaleFromCacheStoreNoRevalidate()
+        public async Task GetStaleFromCacheStoreNoRevalidate()
         {
             // first GET: insert in cache
             var req = new HttpRequestMessage(HttpMethod.Get, TestUri);
@@ -103,14 +104,14 @@
 
             _mockHandler.Response = resp;
 
-            var result = httpClient.SendAsync(req).Result;
+            var result = await httpClient.SendAsync(req);
 
             // second GET: get from cache
             var req2 = new HttpRequestMessage(HttpMethod.Get, TestUri);
-            var result2 = httpClient.SendAsync(req2).Result;
+            var result2 = await httpClient.SendAsync(req2);
 
             // get from cache. Must match response, result and second result
-            var fromCache = _store.GetAsync(new CacheKey(TestUri)).Result;
+            var fromCache = await _store.Get(new CacheKey(TestUri));
 
             result.ShouldBe(fromCache.HttpResponse);
             result.ShouldBe(resp);
@@ -119,7 +120,7 @@
 
 
         [Fact]
-        public void MustNotRevalidateEvenWithExpired()
+        public async Task MustNotRevalidateEvenWithExpired()
         {
             // first GET: insert in cache
             var req = new HttpRequestMessage(HttpMethod.Get, TestUri);
@@ -134,14 +135,14 @@
 
             _mockHandler.Response = resp;
 
-            var result = httpClient.SendAsync(req).Result;
+            var result = await httpClient.SendAsync(req);
 
             // second GET: should not revalidate, just get from cache 
             var req2 = new HttpRequestMessage(HttpMethod.Get, TestUri);
-            var result2 = httpClient.SendAsync(req2).Result;
+            var result2 = await httpClient.SendAsync(req2);
 
             // get from cache. Must match response, result and second result
-            var fromCache = _store.GetAsync(new CacheKey(TestUri)).Result;
+            var fromCache = await _store.Get(new CacheKey(TestUri));
 
             result.ShouldBe(fromCache.HttpResponse);
             result.ShouldBe(resp);
@@ -150,7 +151,7 @@
         }
 
         [Fact]
-        public void MustNotRevalidateEvenWithSharedMaxAge()
+        public async Task MustNotRevalidateEvenWithSharedMaxAge()
         {
             // first GET: insert in cache
             var req = new HttpRequestMessage(HttpMethod.Get, TestUri);
@@ -163,14 +164,14 @@
 
             _mockHandler.Response = resp;
 
-            var result = httpClient.SendAsync(req).Result;
+            var result = await httpClient.SendAsync(req);
 
             // second GET: should not revalidate, just get from cache 
             var req2 = new HttpRequestMessage(HttpMethod.Get, TestUri);
-            var result2 = httpClient.SendAsync(req2).Result;
+            var result2 = await httpClient.SendAsync(req2);
 
             // get from cache. Must match response, result and second result
-            var fromCache = _store.GetAsync(new CacheKey(TestUri)).Result;
+            var fromCache = await _store.Get(new CacheKey(TestUri));
 
             result.ShouldBe(fromCache.HttpResponse);
             result.ShouldBe(resp);
@@ -180,7 +181,7 @@
 
 
         [Fact]
-        public void MustNotRevalidateEvenWithToMaxAge()
+        public async Task MustNotRevalidateEvenWithToMaxAge()
         {
             // first GET: insert in cache
             var req = new HttpRequestMessage(HttpMethod.Get, TestUri);
@@ -193,14 +194,14 @@
 
             _mockHandler.Response = resp;
 
-            var result = httpClient.SendAsync(req).Result;
+            var result = await httpClient.SendAsync(req);
 
             // second GET: should not revalidate, just get from cache 
             var req2 = new HttpRequestMessage(HttpMethod.Get, TestUri);
-            var result2 = httpClient.SendAsync(req2).Result;
+            var result2 = await httpClient.SendAsync(req2);
 
             // get from cache. Must match response, result and second result
-            var fromCache = _store.GetAsync(new CacheKey(TestUri)).Result;
+            var fromCache = await _store.Get(new CacheKey(TestUri));
 
             result.ShouldBe(fromCache.HttpResponse);
             result.ShouldBe(resp);
@@ -210,7 +211,7 @@
 
 
         [Fact]
-        public void MustRevalidateDueToExpired()
+        public async Task MustRevalidateDueToExpired()
         {
             // first GET: insert in cache
             var req = new HttpRequestMessage(HttpMethod.Get, TestUri);
@@ -225,7 +226,7 @@
 
             _mockHandler.Response = resp;
 
-            var result = httpClient.SendAsync(req).Result;
+            var result = await httpClient.SendAsync(req);
 
             // second GET: should revalidate and return 304 
             // which should then mean it returns the item from cache
@@ -233,10 +234,10 @@
             var respNotModified = new HttpResponseMessage(HttpStatusCode.NotModified);
             _mockHandler.Response = respNotModified;
 
-            var result2 = httpClient.SendAsync(req2).Result;
+            var result2 = await httpClient.SendAsync(req2);
 
             // get from cache. Must match response, result and second result
-            var fromCache = _store.GetAsync(new CacheKey(TestUri)).Result;
+            var fromCache = await _store.Get(new CacheKey(TestUri));
 
             result.ShouldBe(fromCache.HttpResponse);
             result.ShouldBe(resp);
@@ -246,7 +247,7 @@
 
 
         [Fact]
-        public void MustRevalidateDueToMaxAge()
+        public async Task MustRevalidateDueToMaxAge()
         {
             // first GET: insert in cache
             var req = new HttpRequestMessage(HttpMethod.Get, TestUri);
@@ -258,7 +259,7 @@
 
             _mockHandler.Response = resp;
 
-            var result = httpClient.SendAsync(req).Result;
+            var result = await httpClient.SendAsync(req);
 
             // second GET: should revalidate and return 304 
             // which should then mean it returns the item from cache
@@ -266,10 +267,10 @@
             var respNotModified = new HttpResponseMessage(HttpStatusCode.NotModified);
             _mockHandler.Response = respNotModified;
 
-            var result2 = httpClient.SendAsync(req2).Result;
+            var result2 = await httpClient.SendAsync(req2);
 
             // get from cache. Must match response, result and second result
-            var fromCache = _store.GetAsync(new CacheKey(TestUri)).Result;
+            var fromCache = await _store.Get(new CacheKey(TestUri));
 
             result.ShouldBe(fromCache.HttpResponse);
             result.ShouldBe(resp);
@@ -278,7 +279,7 @@
         }
 
         [Fact]
-        public void MustRevalidateDueToNoCache()
+        public async Task MustRevalidateDueToNoCache()
         {
             // first GET: insert in cache
             var req = new HttpRequestMessage(HttpMethod.Get, TestUri);
@@ -291,7 +292,7 @@
 
             _mockHandler.Response = resp;
 
-            var result = httpClient.SendAsync(req).Result;
+            var result = await httpClient.SendAsync(req);
 
             // second GET: should revalidate and return 304 
             // which should then mean it returns the item from cache
@@ -299,10 +300,10 @@
             var respNotModified = new HttpResponseMessage(HttpStatusCode.NotModified);
             _mockHandler.Response = respNotModified;
 
-            var result2 = httpClient.SendAsync(req2).Result;
+            var result2 = await httpClient.SendAsync(req2);
 
             // get from cache. Must match response, result and second result
-            var fromCache = _store.GetAsync(new CacheKey(TestUri)).Result;
+            var fromCache = await _store.Get(new CacheKey(TestUri));
 
             result.ShouldBe(fromCache.HttpResponse);
             result.ShouldBe(resp);
@@ -311,7 +312,7 @@
         }
 
         [Fact]
-        public void MustRevalidateDueToSharedMaxAge()
+        public async Task MustRevalidateDueToSharedMaxAge()
         {
             // first GET: insert in cache
             var req = new HttpRequestMessage(HttpMethod.Get, TestUri);
@@ -323,7 +324,7 @@
 
             _mockHandler.Response = resp;
 
-            var result = httpClient.SendAsync(req).Result;
+            var result = await httpClient.SendAsync(req);
 
             // second GET: should revalidate and return 304 
             // which should then mean it returns the item from cache
@@ -331,10 +332,10 @@
             var respNotModified = new HttpResponseMessage(HttpStatusCode.NotModified);
             _mockHandler.Response = respNotModified;
 
-            var result2 = httpClient.SendAsync(req2).Result;
+            var result2 = await httpClient.SendAsync(req2);
 
             // get from cache. Must match response, result and second result
-            var fromCache = _store.GetAsync(new CacheKey(TestUri)).Result;
+            var fromCache = await _store.Get(new CacheKey(TestUri));
 
             result.ShouldBe(fromCache.HttpResponse);
             result.ShouldBe(resp);
@@ -343,7 +344,7 @@
         }
 
         [Fact]
-        public void NoCacheDueToNoExpiresMaxAgeSharedMaxAge()
+        public async Task NoCacheDueToNoExpiresMaxAgeSharedMaxAge()
         {
             var req = new HttpRequestMessage(HttpMethod.Get, TestUri);
             var resp = GetResponseMessage(false);
@@ -354,15 +355,15 @@
             resp.Content.Headers.Expires = null;
             _mockHandler.Response = resp;
 
-            var result = httpClient.SendAsync(req).Result;
+            var result = await httpClient.SendAsync(req);
 
             // result should NOT be in cache
-            var fromCache = _store.GetAsync(TestUri).Result;
+            var fromCache = await _store.Get(TestUri);
             fromCache.ShouldBeNull();
         }
 
         [Fact]
-        public void NoCacheDueToNoStore()
+        public async Task NoCacheDueToNoStore()
         {
             var req = new HttpRequestMessage(HttpMethod.Get, TestUri);
             var resp = GetResponseMessage(false);
@@ -372,10 +373,10 @@
             resp.Headers.CacheControl.NoStore = true;
             _mockHandler.Response = resp;
 
-            var result = httpClient.SendAsync(req).Result;
+            var result = await httpClient.SendAsync(req);
 
             // result should NOT be in cache
-            var fromCache = _store.GetAsync(TestUri).Result;
+            var fromCache = await _store.Get(TestUri);
             fromCache.ShouldBeNull();
         }
     }

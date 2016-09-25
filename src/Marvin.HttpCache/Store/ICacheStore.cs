@@ -1,34 +1,20 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http;
-using System.Text;
-
-namespace Marvin.HttpCache.Store
+﻿namespace Marvin.HttpCache.Store
 {
-    //public interface ICacheStore 
-    //{
-    //    System.Threading.Tasks.Task ClearAsync();
-    //    System.Threading.Tasks.Task<HttpResponseMessage> GetAsync(string key);
-    //    System.Threading.Tasks.Task SetAsync(string key, HttpResponseMessage value);
-    //    System.Threading.Tasks.Task RemoveAsync(string key);
-    //    System.Threading.Tasks.Task RemoveRangeAsync(string keyStartsWith);
-
-    //}
-
-
+    using System.Collections.Generic;
+    using System.Threading.Tasks;
 
     public interface ICacheStore
     {
-        System.Threading.Tasks.Task ClearAsync(); 
+        Task Clear();
 
-        System.Threading.Tasks.Task<IEnumerable<CacheEntry>> GetAsync(string primaryKey);
+        Task<IEnumerable<CacheEntry>> Get(string primaryKey);
 
-        System.Threading.Tasks.Task<CacheEntry> GetAsync(CacheKey key);
-        
-        System.Threading.Tasks.Task SetAsync(CacheKey key, CacheEntry value);
-        System.Threading.Tasks.Task RemoveAsync(CacheKey key);
-        System.Threading.Tasks.Task RemoveRangeAsync(string primaryKeyStartsWith);
+        Task<CacheEntry> Get(CacheKey key);
 
+        Task Set(CacheKey key, CacheEntry value);
+
+        Task Remove(CacheKey key);
+
+        Task RemoveRange(string primaryKeyStartsWith);
     }
 }

@@ -11,10 +11,7 @@
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,
             CancellationToken cancellationToken)
         {
-            var responseTask = new TaskCompletionSource<HttpResponseMessage>();
-            responseTask.SetResult(Response);
-
-            return responseTask.Task;
+            return Task.FromResult(Response);
         }
     }
 }
