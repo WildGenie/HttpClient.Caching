@@ -4,7 +4,7 @@
     using System.Threading;
     using System.Threading.Tasks;
 
-    internal class DummyMessageHandler : HttpMessageHandler
+    internal class FakeServerMessageHandler : HttpMessageHandler
     {
         public HttpRequestMessage Request { get; set; }
 

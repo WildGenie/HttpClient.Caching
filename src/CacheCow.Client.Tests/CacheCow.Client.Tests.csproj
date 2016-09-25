@@ -78,8 +78,6 @@
     <Compile Include="CacheCowHeaderTests.cs" />
     <Compile Include="CacheStoreQuotaManagerTests.cs" />
     <Compile Include="CachingHandlerTests.cs" />
-    <EmbeddedResource Include="Data\Request.cs" />
-    <EmbeddedResource Include="Data\Response.cs" />
     <Compile Include="Common\DummyMessageHandler.cs" />
     <Compile Include="Helper\DeepComparer.cs" />
     <Compile Include="Helper\ResponseHelper.cs" />
@@ -103,6 +101,8 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
+    <EmbeddedResource Include="Data\Request.cs" />
+    <EmbeddedResource Include="Data\Response.cs" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

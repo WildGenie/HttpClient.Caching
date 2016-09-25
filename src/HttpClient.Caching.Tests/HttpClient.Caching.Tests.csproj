@@ -70,7 +70,7 @@
     <Compile Include="CacheStore\InMemoryVaryHeaderStoreTests.cs" />
     <Compile Include="CachingHandlerTests.cs" />
     <EmbeddedResource Include="Data\Request.dat" />
-    <Compile Include="DummyMessageHandler.cs" />
+    <Compile Include="FakeServerMessageHandler.cs" />
     <Compile Include="Headers\CachingHeaderTests.cs" />
     <Compile Include="CacheTests.cs" />
     <Compile Include="Helper\DeepComparer.cs" />

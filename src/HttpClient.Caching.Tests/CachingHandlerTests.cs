@@ -58,7 +58,6 @@
             };
             _client = new HttpClient(cachingHandler);
 
-
             // run
             await Should.ThrowAsync<NotImplementedException>(_client.SendAsync(request));
         }
@@ -71,11 +70,9 @@
             var responseFromCache = GetOkMessage(true);
             responseFromCache.Headers.ETag = new EntityTagHeaderValue(ETagValue);
             responseFromCache.Content.Headers.Expires = DateTime.Now.Subtract(TimeSpan.FromSeconds(10));
-            await _cacheStore.AddOrUpdate(new CacheKey(DummyUrl), responseFromCache);
 
             var responseFromServer = new HttpResponseMessage(HttpStatusCode.NotModified);
             _serverMessageHandler.Response = responseFromServer;
-
 
             /* _cacheStore.Expect(
                      x => x.TryGetValue(Arg<CacheKey>.Is.Anything, out Arg<HttpResponseMessage>.Out(responseFromCache).Dummy))
