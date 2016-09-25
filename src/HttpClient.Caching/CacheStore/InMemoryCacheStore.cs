@@ -26,13 +26,14 @@
             _defaultExpiry = defaultExpiry;
         }
 
-        public Task<bool> TryGetValue(CacheKey key, out HttpResponseMessage response)
+        public async Task<HttpResponseMessage> TryGetValue(CacheKey key)
         {
-            response = null;
             var result = _responseCache.Get(key.HashBase64);
-            if(result != null)
-                response = _messageSerializer.DeserializeToResponseAsync(new MemoryStream((byte[]) result)).Result;
-            return Task.FromResult(result != null);
+            if(result == null)
+            {
+                return null;
+            }
+            return  await _messageSerializer.DeserializeToResponseAsync(new MemoryStream((byte[]) result));
         }
 
         public async Task AddOrUpdate(CacheKey key, HttpResponseMessage response)

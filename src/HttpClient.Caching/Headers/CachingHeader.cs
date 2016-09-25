@@ -1,7 +1,6 @@
 ﻿namespace HttpClient.Caching.Headers
 {
     using System;
-    using System.Reflection;
     using System.Text;
 
     public class CachingHeader
@@ -11,7 +10,7 @@
         // but it has the advantage of using at compile-time
         // so conscious decision to use const instead of static readonly
 
-        public const string Name = "x-cachecow";
+        public const string Name = "x-httpclient-caching";
 
         public bool? WasStale { get; set; }
 

@@ -5,7 +5,7 @@
 
     public interface ICacheStore
     {
-        Task<bool> TryGetValue(CacheKey key, out HttpResponseMessage response);
+        Task<HttpResponseMessage> TryGetValue(CacheKey key);
 
         Task AddOrUpdate(CacheKey key, HttpResponseMessage response);
 

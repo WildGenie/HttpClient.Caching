@@ -10,8 +10,7 @@
 
         public HttpResponseMessage Response { get; set; }
 
-        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,
-            CancellationToken cancellationToken)
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken _)
         {
             Request = request;
             return Task.FromResult(Response);

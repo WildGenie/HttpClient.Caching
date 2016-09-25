@@ -113,14 +113,12 @@
             _ignoreRequestRules = request =>
             {
                 if(!request.Method.IsIn(HttpMethod.Get, HttpMethod.Put))
+                {
                     return true;
+                }
 
                 // client can tell CachingHandler not to do caching for a particular request
-                if(request.Headers.CacheControl != null)
-                    if(request.Headers.CacheControl.NoStore)
-                        return true;
-
-                return false;
+                return request.Headers.CacheControl != null && request.Headers.CacheControl.NoStore;
             };
 
             ResponseStoragePreparationRules = response =>
@@ -241,22 +239,25 @@
             return false;
         }
 
-        // TODO: this method is terribly long. Shorten
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,
             CancellationToken cancellationToken)
         {
-            var cacheCowHeader = new CachingHeader();
+            var cachingHeader = new CachingHeader();
             var uri = request.RequestUri.ToString();
 
             //TraceWriter.WriteLine("{0} - Starting SendAsync", TraceLevel.Verbose, request.RequestUri.ToString());
 
             // check if needs to be ignored
             if(_ignoreRequestRules(request))
-                return await SendAsync(request, cancellationToken); // EXIT !! _________________
+            {
+                return await base.SendAsync(request, cancellationToken);
+            }
 
             IEnumerable<string> varyHeaders;
             if(!VaryHeaderStore.TryGetValue(uri, out varyHeaders))
+            {
                 varyHeaders = DefaultVaryHeaders;
+            }
             var cacheKey = new CacheKey(uri,
                 request.Headers.Where(x => varyHeaders.Any(y => y.Equals(x.Key,
                         StringComparison.CurrentCultureIgnoreCase)))
@@ -271,11 +272,12 @@
             {
                 //TraceWriter.WriteLine("{0} - Before TryGetValue", TraceLevel.Verbose, request.RequestUri.ToString());
 
-                cacheCowHeader.DidNotExist = !await _cacheStore.TryGetValue(cacheKey, out cachedResponse);
+                cachedResponse = await _cacheStore.TryGetValue(cacheKey);
+                cachingHeader.DidNotExist = cachedResponse == null;
                 /*TraceWriter.WriteLine("{0} - After TryGetValue: DidNotExist => {1}", TraceLevel.Verbose,
                     request.RequestUri.ToString(), cacheCowHeader.DidNotExist);*/
 
-                if(!cacheCowHeader.DidNotExist.Value) // so if it EXISTS in cache
+                if(!cachingHeader.DidNotExist.Value) // so if it EXISTS in cache
                 {
                     /* TraceWriter.WriteLine("{0} - Existed in the cache. CacheControl Headers => {1}", TraceLevel.Verbose,
                          request.RequestUri.ToString(),
@@ -292,45 +294,46 @@
                 if((request.Method == HttpMethod.Put) && validationResultForCachedResponse.IsIn(
                        ResponseValidationResult.OK, ResponseValidationResult.MustRevalidate))
                 {
-                    DoPutValidation(request, cacheCowHeader, cachedResponse);
-                    return await SendAsync(request, cancellationToken); // EXIT !!
+                    DoPutValidation(request, cachingHeader, cachedResponse);
+                    return await base.SendAsync(request, cancellationToken);
                 }
 
                 // here onward is only GET only. See if cache OK and if it is then return
                 if(validationResultForCachedResponse == ResponseValidationResult.OK)
                 {
-                    cacheCowHeader.RetrievedFromCache = true;
-                    return cachedResponse.AddCachingHeader(cacheCowHeader);
-                    // EXIT !!
+                    cachingHeader.RetrievedFromCache = true;
+                    return cachedResponse.AddCachingHeader(cachingHeader);
                 }
 
                 // if stale
                 if(validationResultForCachedResponse == ResponseValidationResult.Stale)
                 {
-                    cacheCowHeader.WasStale = true;
+                    cachingHeader.WasStale = true;
                     var isFreshOrStaleAcceptable = IsFreshOrStaleAcceptable(cachedResponse, request);
                     if(isFreshOrStaleAcceptable.HasValue && isFreshOrStaleAcceptable.Value) // similar to OK
-                        return cachedResponse.AddCachingHeader(cacheCowHeader);
+                        return cachedResponse.AddCachingHeader(cachingHeader);
                     validationResultForCachedResponse = ResponseValidationResult.MustRevalidate; // revalidate
                 }
 
                 // cache validation for GET
                 else if(validationResultForCachedResponse == ResponseValidationResult.MustRevalidate)
                 {
-                    DoCacheValidationForGet(request, cacheCowHeader, cachedResponse);
+                    DoCacheValidationForGet(request, cachingHeader, cachedResponse);
                 }
             }
             catch(Exception ex)
             {
                 if(ExceptionHandler == null)
+                {
                     throw;
+                }
                 ExceptionHandler(ex);
-                Trace.TraceWarning("Exception was swallowed in CacheCow: " + ex);
-                return await SendAsync(request, cancellationToken);
+                //Trace.TraceWarning("Exception was swallowed in CacheCow: " + ex);
+                return await base.SendAsync(request, cancellationToken);
             }
 
             // _______________________________ RESPONSE only GET  ___________________________________________
-            var serverResponse = await SendAsync(request, cancellationToken);
+            var serverResponse = await base.SendAsync(request, cancellationToken);
 
             // HERE IS LATE FOR APPLYING EXCEPTION POLICY !!!
 
@@ -338,8 +341,10 @@
             //    TraceLevel.Verbose, request.RequestUri.ToString());
 
             if(request.Method != HttpMethod.Get)
+            {
                 // only interested here if it is a GET - this line really never called - only GET gets here
                 return serverResponse;
+            }
 
             // in case of MustRevalidate with result 304
             if((validationResultForCachedResponse == ResponseValidationResult.MustRevalidate) &&
@@ -350,13 +355,13 @@
                     TraceLevel.Verbose, request.RequestUri.ToString());*/
 
                 cachedResponse.RequestMessage = request;
-                cacheCowHeader.RetrievedFromCache = true;
+                cachingHeader.RetrievedFromCache = true;
                 /*TraceWriter.WriteLine("{0} - NotModified",
                     TraceLevel.Verbose, request.RequestUri.ToString());*/
 
                 UpdateCachedResponse(cacheKey, cachedResponse, serverResponse, _cacheStore);
                 ConsumeAndDisposeResponse(serverResponse);
-                return cachedResponse.AddCachingHeader(cacheCowHeader); // EXIT !! _______________
+                return cachedResponse.AddCachingHeader(cachingHeader); // EXIT !! _______________
             }
 
             var validationResult = ResponseValidator(serverResponse);
@@ -394,11 +399,10 @@
                     );
 
                     // store the cache
-                    _cacheStore.AddOrUpdate(cacheKey, serverResponse);
+                    await _cacheStore.AddOrUpdate(cacheKey, serverResponse);
 
                     /*TraceWriter.WriteLine("{0} - After AddOrUpdate", TraceLevel.Verbose,
                         request.RequestUri.ToString());*/
-
 
                     break;
                 default:
@@ -407,19 +411,18 @@
 
                      TraceWriter.WriteLine("{0} - Before TryRemove", TraceLevel.Verbose,
                          request.RequestUri.ToString());*/
-                    _cacheStore.TryRemove(cacheKey);
+                    await _cacheStore.TryRemove(cacheKey);
                     /* TraceWriter.WriteLine("{0} - After AddOrUpdate", TraceLevel.Verbose,
                          request.RequestUri.ToString());*/
 
-                    cacheCowHeader.NotCacheable = true;
-
+                    cachingHeader.NotCacheable = true;
 
                     break;
             }
             /* TraceWriter.WriteLine("{0} - Before returning response",
                  TraceLevel.Verbose, request.RequestUri.ToString());*/
 
-            return serverResponse.AddCachingHeader(cacheCowHeader);
+            return serverResponse.AddCachingHeader(cachingHeader);
         }
 
         private void DoPutValidation(HttpRequestMessage request, CachingHeader cachingHeader,
