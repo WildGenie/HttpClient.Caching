@@ -45,7 +45,12 @@
     <Reference Include="System.Runtime.Caching" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Attempt2\CacheKey2.cs" />
+    <Compile Include="Attempt2\CachingHeader.cs" />
+    <Compile Include="Attempt2\ICacheStore2.cs" />
+    <Compile Include="Attempt2\InMemoryCacheStore2.cs" />
     <Compile Include="CacheControlHeaderExtensions.cs" />
+    <Compile Include="Attempt2\CachingHandler2.cs" />
     <Compile Include="Headers\CachingHeader.cs" />
     <Compile Include="CacheStore\BasicExtensions.cs" />
     <Compile Include="CacheStore\CacheKey.cs" />

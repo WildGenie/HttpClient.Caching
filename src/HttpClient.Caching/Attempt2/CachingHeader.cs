@@ -1,4 +1,4 @@
-﻿namespace HttpClient.Caching.Headers
+﻿namespace HttpClient.Caching.Attempt2
 {
     using System;
     using System.Text;
@@ -100,7 +100,7 @@
             return result;
         }
 
-        public static class ExtensionNames
+        private static class ExtensionNames
         {
             public const string WasStale = "was-stale";
             public const string DidNotExist = "did-not-exist";
