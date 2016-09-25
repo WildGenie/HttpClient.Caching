@@ -46,6 +46,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Attempt2\CacheKey2.cs" />
+    <Compile Include="Attempt2\CacheStore\MessageContentSerializer.cs" />
     <Compile Include="Attempt2\CachingHeader.cs" />
     <Compile Include="Attempt2\ICacheStore2.cs" />
     <Compile Include="Attempt2\InMemoryCacheStore2.cs" />
@@ -57,7 +58,7 @@
     <Compile Include="CacheStore\IHttpMessageSerializerAsync.cs" />
     <Compile Include="CacheStore\InMemoryVaryHeaderStore.cs" />
     <Compile Include="CacheStore\IVaryHeaderStore.cs" />
-    <Compile Include="CacheStore\MessageContentHttpMessageSerializer.cs" />
+    <Compile Include="CacheStore\MessageContentSerializer.cs" />
     <Compile Include="CachingHandler.cs" />
     <Compile Include="CacheStore\ICacheStore.cs" />
     <Compile Include="CacheStore\InMemoryCacheStore.cs" />
