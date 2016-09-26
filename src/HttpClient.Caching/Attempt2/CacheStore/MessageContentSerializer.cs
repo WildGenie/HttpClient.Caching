@@ -6,43 +6,35 @@
 
     public static class MessageContentSerializer
     {
-        public static async Task Serialize(HttpResponseMessage response, Stream stream)
+        public static async Task Serialize(HttpResponseMessage response, Stream destinationStream)
         {
-            if(response.Content != null)
-            {
-                await response.Content.LoadIntoBufferAsync();
-            }
             var httpMessageContent = new HttpMessageContent(response);
-            var buffer = await httpMessageContent.ReadAsByteArrayAsync().ConfigureAwait(false);
-            await stream.WriteAsync(buffer, 0, buffer.Length);
+            var sourceStream = await httpMessageContent.ReadAsStreamAsync().ConfigureAwait(false);
+            await sourceStream.CopyToAsync(destinationStream);
         }
 
-        public static async Task Serialize(HttpRequestMessage request, Stream stream)
+        public static async Task Serialize(HttpRequestMessage request, Stream destinationStream)
         {
-            if(request.Content != null)
-            {
-                await request.Content.LoadIntoBufferAsync();
-            }
             var httpMessageContent = new HttpMessageContent(request);
-            var buffer = await httpMessageContent.ReadAsByteArrayAsync();
-            await stream.WriteAsync(buffer, 0, buffer.Length);
+            var sourceStream = await httpMessageContent.ReadAsStreamAsync().ConfigureAwait(false);
+            await sourceStream.CopyToAsync(destinationStream);
         }
 
-        public static Task<HttpResponseMessage> DeserializeToResponse(Stream stream)
+        public static Task<HttpResponseMessage> DeserializeToResponse(Stream sourceStream)
         {
             var response = new HttpResponseMessage
             {
-                Content = new StreamContent(stream)
+                Content = new StreamContent(sourceStream)
             };
             response.Content.Headers.Add("Content-Type", "application/http;msgtype=response");
             return response.Content.ReadAsHttpResponseMessageAsync();
         }
 
-        public static Task<HttpRequestMessage> DeserializeToRequest(Stream stream)
+        public static Task<HttpRequestMessage> DeserializeToRequest(Stream sourceStream)
         {
             var request = new HttpRequestMessage
             {
-                Content = new StreamContent(stream)
+                Content = new StreamContent(sourceStream)
             };
             request.Content.Headers.Add("Content-Type", "application/http;msgtype=request");
             return request.Content.ReadAsHttpRequestMessageAsync();

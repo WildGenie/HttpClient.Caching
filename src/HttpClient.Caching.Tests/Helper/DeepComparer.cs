@@ -108,7 +108,7 @@
     {
         public static void AddError(this List<string> list, string name, object a, object b)
         {
-            list.Add(string.Format("{0} -> a:{1} b:{2}", name, a, b));
+            list.Add($"{name} -> a:{a} b:{b}");
         }
     }
 }

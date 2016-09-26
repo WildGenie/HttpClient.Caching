@@ -8,7 +8,7 @@
     using Shouldly;
     using Xunit;
 
-    public class SerialisationTests
+    public class MessageContentSerialisationTests
     {
         [Fact]
         public async Task Request_Deserialize_Serialize()
@@ -44,28 +44,6 @@
 
                 result.Count().ShouldBe(0, string.Join("\r\n", result));
             }
-        }
-
-        [Fact]
-        public async Task Response_Deserialize_Serialize1()
-        {
-            var stream =
-                    Assembly.GetExecutingAssembly().GetManifestResourceStream("HttpClient.Caching.Data.Response.dat");
-
-            var memoryStream = new MemoryStream();
-
-            while (true)
-            {
-                var response = await MessageContentSerializer.DeserializeToResponse(stream);
-                await MessageContentSerializer.Serialize(response, Stream.Null);
-                memoryStream.Position = 0;
-            }
-
-            /*memoryStream.Position = 0;
-            var response2 = await MessageContentSerializer.DeserializeToResponse(memoryStream);
-            var result = DeepComparer.Compare(response, response2);
-
-            result.Count().ShouldBe(0, string.Join("\r\n", result));*/
         }
 
         [Fact]
