@@ -3,9 +3,25 @@
     using System;
     using System.Text;
 
+    [Flags]
+    public enum CachingInfo
+    {
+        NotCacheable,
+        RetrievedFromCache,
+        NotInCache,
+        CacheValidationApplied,
+        WasStale
+    }
+
+
     public class CachingHeader
     {
         public const string Name = "x-httpclient-caching";
+
+        public CachingHeader(CachingInfo cachingInfo)
+        {
+            
+        }
 
         public bool? WasStale { get; set; }
 

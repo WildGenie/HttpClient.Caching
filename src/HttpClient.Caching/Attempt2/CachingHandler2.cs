@@ -7,8 +7,6 @@
     using System.Threading;
     using System.Threading.Tasks;
 
-    public delegate DateTime GetUtcNow();
-
     public class CachingHandler2 : DelegatingHandler
     {
         private readonly CachingHandler2Settings _settings;
@@ -16,11 +14,13 @@
             HttpStatusCode.OK, HttpStatusCode.NonAuthoritativeInformation, HttpStatusCode.PartialContent,
             HttpStatusCode.MultipleChoices, HttpStatusCode.MovedPermanently, HttpStatusCode.Gone
         });
+        private readonly ICacheStore2 _cacheStore;
 
         public CachingHandler2(CachingHandler2Settings settings)
         {
             if (settings == null) throw new ArgumentNullException(nameof(settings));
             _settings = settings;
+            _cacheStore = settings.CacheStore;
         }
 
         protected override Task<HttpResponseMessage> SendAsync(
@@ -42,16 +42,46 @@
             HttpRequestMessage request,
             CancellationToken cancellationToken)
         {
-            // Check request is in cache?
-            var response = await base.SendAsync(request, cancellationToken);
-            if (!IsResponseCacheable(response))
+            HttpResponseMessage response;
+
+            if (request.Headers.CacheControl?.NoStore == true)
+            {
+                return await HandleNoStoreRequest(request, cancellationToken);
+            }
+
+            var cacheKey = request.CreateCacheKey();
+            var cacheEntry = await _cacheStore.Get(cacheKey);
+            if (cacheEntry == null)
+            {
+                response = await base.SendAsync(request, cancellationToken);
+                var cachingHeader = new CachingHeader();
+                if (IsResponseCacheable(response))
+                {
+                    await _cacheStore.AddOrUpdate(cacheKey, request, response);
+                }
+                else
+                {
+                    cachingHeader.NotCacheable = false;
+                }
+                return response;
+            }
+            else
+            {
+                response = await cacheEntry.GetCachedResponse();
+
+                cachingHeader.RetrievedFromCache = true;
+            }
+
+            /*if (!IsResponseCacheable(response))
             {
                 // Remove from cache
             }
             else
             {
                 // Add to cache
-            }
+            }*/
+
+            response.Headers.Add(CachingHeader.Name, cachingHeader.ToString());
             return response;
         }
 
@@ -69,29 +99,29 @@
             {
                 return false;
             }
-            if ((response.RequestMessage.Headers.CacheControl?.NoStore == true)
-                || (response.Headers.CacheControl?.NoStore == true))
+            return response.RequestMessage.Headers.CacheControl?.NoStore != true;
+        }
+
+        private async Task<HttpResponseMessage> HandleNoStoreRequest(
+            HttpRequestMessage request,
+            CancellationToken cancellationToken)
+        {
+            var response = await base.SendAsync(request, cancellationToken);
+            var cachingHeader = new CachingHeader
             {
-                return false;
-            }
-            return true;
+                RetrievedFromCache = false,
+                NotCacheable = true
+            };
+            response.Headers.Add(CachingHeader.Name, cachingHeader.ToString());
+            return response;
         }
     }
 
-    public class CachingHandler2Settings
+    internal static class HttpRequestMessageExtensions
     {
-        private readonly ICacheStore2 _cacheStore2;
-        private GetUtcNow _getUtcNow;
-
-        public CachingHandler2Settings(ICacheStore2 cacheStore2 = null)
+        internal static CacheKey2 CreateCacheKey(this HttpRequestMessage request)
         {
-            _cacheStore2 = cacheStore2 ?? new InMemoryCacheStore2();
-        }
-
-        public GetUtcNow GetUtcNow
-        {
-            get { return _getUtcNow ?? (() => DateTime.UtcNow); }
-            set { _getUtcNow = value; }
+            return new CacheKey2(request.Method, request.RequestUri);
         }
     }
 }

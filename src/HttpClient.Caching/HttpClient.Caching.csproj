@@ -30,6 +30,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Microsoft.IO.RecyclableMemoryStream, Version=1.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.IO.RecyclableMemoryStream.1.1.0.0\lib\net45\Microsoft.IO.RecyclableMemoryStream.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.6.0.4\lib\net45\Newtonsoft.Json.dll</HintPath>
       <Private>True</Private>
@@ -45,9 +49,12 @@
     <Reference Include="System.Runtime.Caching" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Attempt2\CacheEntry.cs" />
     <Compile Include="Attempt2\CacheKey2.cs" />
     <Compile Include="Attempt2\CacheStore\MessageContentSerializer.cs" />
+    <Compile Include="Attempt2\CachingHandler2Settings.cs" />
     <Compile Include="Attempt2\CachingHeader.cs" />
+    <Compile Include="Attempt2\GetUtcNow.cs" />
     <Compile Include="Attempt2\ICacheStore2.cs" />
     <Compile Include="Attempt2\InMemoryCacheStore2.cs" />
     <Compile Include="CacheControlHeaderExtensions.cs" />

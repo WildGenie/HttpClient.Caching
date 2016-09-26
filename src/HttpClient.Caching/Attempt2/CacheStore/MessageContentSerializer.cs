@@ -22,6 +22,7 @@
 
         public static Task<HttpResponseMessage> DeserializeToResponse(Stream sourceStream)
         {
+            sourceStream.Position = 0;
             var response = new HttpResponseMessage
             {
                 Content = new StreamContent(sourceStream)
@@ -32,6 +33,7 @@
 
         public static Task<HttpRequestMessage> DeserializeToRequest(Stream sourceStream)
         {
+            sourceStream.Position = 0;
             var request = new HttpRequestMessage
             {
                 Content = new StreamContent(sourceStream)
