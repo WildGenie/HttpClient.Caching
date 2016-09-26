@@ -67,7 +67,7 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Data\Response.dat" />
-    <Compile Include="Attempt2\CacheStore\SerialisationTests.cs" />
+    <Compile Include="Attempt2\CacheStore\MessageContentSerialisationTests.cs" />
     <Compile Include="Attempt2\CachingHandler2Tests.cs" />
     <Compile Include="CacheStore\InMemoryVaryHeaderStoreTests.cs" />
     <Compile Include="CachingHandlerTests.cs" />
