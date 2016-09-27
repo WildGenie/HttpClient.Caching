@@ -32,7 +32,7 @@
         public async Task<CacheQueryResult> QueryCacheAsync(HttpRequestMessage request)
         {
             // Do we have anything stored for this method and URI?  Return entries for all variants
-            var cacheEntryList = await _contentStore.GetEntriesAsync(new CacheKey(request.RequestUri, request.Method)).ConfigureAwait(false);
+            var cacheEntryList = await _contentStore.GetEntries(new CacheKey(request.RequestUri, request.Method)).ConfigureAwait(false);
             if (cacheEntryList == null)  // Should I use null or Count() == 0 ?
             {
                 return CacheQueryResult.CannotUseCache();
@@ -49,7 +49,7 @@
             }
 
             // Get the complete response, including body based on the selected variant
-            var response = await _contentStore.GetResponseAsync(selectedEntry.VariantId).ConfigureAwait(false);
+            var response = await _contentStore.GetResponse(selectedEntry.VariantId).ConfigureAwait(false);
 
             // Do caching directives require that we revalidate it regardless of freshness?
             var requestCacheControl = request.Headers.CacheControl ?? new CacheControlHeaderValue();
@@ -151,7 +151,7 @@
 
             UpdateCacheEntry(notModifiedResponse, selectedEntry);
 
-            await _contentStore.UpdateEntryAsync(selectedEntry, result.SelectedResponse).ConfigureAwait(false);  //TODO
+            await _contentStore.UpdateEntry(selectedEntry, result.SelectedResponse).ConfigureAwait(false);  //TODO
         }
 
         public async Task StoreResponseAsync(HttpResponseMessage response)
@@ -160,7 +160,7 @@
 
             CacheEntry selectedEntry = null;
 
-            IEnumerable<CacheEntry> cacheEntries = await _contentStore.GetEntriesAsync(primaryCacheKey).ConfigureAwait(false);
+            IEnumerable<CacheEntry> cacheEntries = await _contentStore.GetEntries(primaryCacheKey).ConfigureAwait(false);
             if (cacheEntries != null)
             {
                 selectedEntry = MatchVariant(response.RequestMessage, cacheEntries);
@@ -169,13 +169,13 @@
             if (selectedEntry != null)
             {
                 UpdateCacheEntry(response, selectedEntry);
-                await _contentStore.UpdateEntryAsync(selectedEntry, response).ConfigureAwait(false);
+                await _contentStore.UpdateEntry(selectedEntry, response).ConfigureAwait(false);
             }
             else
             {
                 selectedEntry = new CacheEntry(primaryCacheKey, response, _getUtcNow);
                 UpdateCacheEntry(response, selectedEntry);
-                await _contentStore.AddEntryAsync(selectedEntry, response).ConfigureAwait(false);
+                await _contentStore.AddEntry(selectedEntry, response).ConfigureAwait(false);
             }
         }
 

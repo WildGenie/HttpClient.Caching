@@ -2,49 +2,39 @@
 {
     using System;
     using System.Collections.Concurrent;
-    using System.Collections.Generic;
     using System.IO;
-    using System.Linq;
     using System.Net.Http;
     using System.Threading.Tasks;
 
     public class InMemoryContentStore : IContentStore
     {
-        private readonly object _syncRoot = new object();
         private readonly ConcurrentDictionary<CacheKey, CacheEntryContainer> _cacheContainers = new ConcurrentDictionary<CacheKey, CacheEntryContainer>();
-        private readonly Dictionary<Guid, HttpResponseMessage> _responseCache = new Dictionary<Guid, HttpResponseMessage>();
+        private readonly ConcurrentDictionary<Guid, HttpResponseMessage> _responseCache = new ConcurrentDictionary<Guid, HttpResponseMessage>();
         
-        public async Task<CacheEntry[]> GetEntriesAsync(CacheKey cacheKey)
+        public async Task<CacheEntry[]> GetEntries(CacheKey cacheKey)
         {
-            return _cacheContainers.ContainsKey(cacheKey) ? _cacheContainers[cacheKey].Entries.ToArray() : new CacheEntry[0];
+            return _cacheContainers.ContainsKey(cacheKey) 
+                ? _cacheContainers[cacheKey].GetEntries()
+                : new CacheEntry[0];
         }
 
-        public async Task<HttpResponseMessage> GetResponseAsync(Guid variantId)
+        public async Task<HttpResponseMessage> GetResponse(Guid variantId)
         {
-            return await CloneResponseAsync(_responseCache[variantId]).ConfigureAwait(false);
+            return await CloneResponse(_responseCache[variantId]).ConfigureAwait(false);
         }
 
-        public async Task AddEntryAsync(CacheEntry entry, HttpResponseMessage response)
+        public async Task AddEntry(CacheEntry entry, HttpResponseMessage response)
         {
             var cacheEntryContainer = GetOrCreateContainer(entry.Key);
-            lock (_syncRoot)
-            {
-                cacheEntryContainer.Entries.Add(entry);
-                _responseCache[entry.VariantId] = response;
-            }
+            cacheEntryContainer.Add(entry);
+            _responseCache[entry.VariantId] = response;
         }
 
-        public async Task UpdateEntryAsync(CacheEntry entry, HttpResponseMessage response)
+        public async Task UpdateEntry(CacheEntry entry, HttpResponseMessage response)
         {
             var cacheEntryContainer = GetOrCreateContainer(entry.Key);
-            
-            lock (_syncRoot)
-            {
-                var oldentry = cacheEntryContainer.Entries.First(e => e.VariantId == entry.VariantId);
-                cacheEntryContainer.Entries.Remove(oldentry);
-                cacheEntryContainer.Entries.Add(entry);
-                _responseCache[entry.VariantId] = response;
-            }
+            cacheEntryContainer.Update(entry);
+            _responseCache[entry.VariantId] = response;
         }
 
         private CacheEntryContainer GetOrCreateContainer(CacheKey key)
@@ -52,7 +42,7 @@
             return _cacheContainers.GetOrAdd(key, k => new CacheEntryContainer(k));
         }
 
-        private async Task<HttpResponseMessage> CloneResponseAsync(HttpResponseMessage response)
+        private async Task<HttpResponseMessage> CloneResponse(HttpResponseMessage response)
         {
             var newResponse = new HttpResponseMessage(response.StatusCode);
             var ms = new MemoryStream();

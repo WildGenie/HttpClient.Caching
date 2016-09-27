@@ -29,6 +29,7 @@
         public Guid VariantId { get; private set; }
 
         public DateTimeOffset Expires { get; set; }
+
         public DateTime Date { get; set; }
 
         public CacheControlHeaderValue CacheControl { get; set; }
