@@ -37,6 +37,11 @@
             _responseCache[entry.VariantId] = response;
         }
 
+        public Task RemoveEntries(CacheKey cacheKey)
+        {
+            throw new NotImplementedException();
+        }
+
         private CacheEntryContainer GetOrCreateContainer(CacheKey key)
         {
             return _cacheContainers.GetOrAdd(key, k => new CacheEntryContainer(k));

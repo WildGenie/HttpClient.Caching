@@ -20,7 +20,7 @@
                                     .Where(h => Vary.Contains(h.Key.ToLowerInvariant()))
                                     .ToDictionary(k => k.Key.ToLowerInvariant(), v => v.Value);
             VariantId = Guid.NewGuid();
-            HasValidator = response.Headers.ETag != null || (response.Content != null && response.Content.Headers.LastModified != null);
+            HasValidator = response.Headers.ETag != null || (response.Content?.Headers.LastModified != null);
             CacheControl = response.Headers.CacheControl ?? new CacheControlHeaderValue();
         }
 
