@@ -4,30 +4,27 @@
     using System.IO;
     using System.Net.Http;
     using System.Threading.Tasks;
+    using HttpClient.Caching.Attempt2.CacheStore;
     using Shouldly;
     using Xunit;
 
     public class ResponseSerializationTests
     {
         [Fact]
-        public async Task IntegrationTest_Deserialize()
-        {
-            var fileStream = new FileStream("msg.bin", FileMode.Open);
-            var defaultHttpResponseMessageSerializer = new MessageContentHttpMessageSerializer();
-            var httpResponseMessage = await defaultHttpResponseMessageSerializer.DeserializeToResponse(fileStream);
-            fileStream.Close();
-        }
-
-        [Fact]
         public async Task IntegrationTest_Serialize()
         {
             var httpClient = new HttpClient();
             var httpResponseMessage = await httpClient.GetAsync("http://google.com");
             Console.WriteLine(httpResponseMessage.Headers.ToString());
-            var defaultHttpResponseMessageSerializer = new MessageContentHttpMessageSerializer();
-            var fileStream = new FileStream("msg.bin", FileMode.Create);
-            await defaultHttpResponseMessageSerializer.Serialize(httpResponseMessage, fileStream);
-            fileStream.Close();
+            using (var fileStream = new FileStream("msg.bin", FileMode.Create))
+            {
+                await MessageContentSerializer.Serialize(httpResponseMessage, fileStream);
+            }
+
+            using (var fileStream = new FileStream("msg.bin", FileMode.Open))
+            {
+                httpResponseMessage = await MessageContentSerializer.DeserializeToResponse(fileStream);
+            }
         }
 
         [Fact]
@@ -38,10 +35,9 @@
             var contentLength = httpResponseMessage.Content.Headers.ContentLength;
                 // access to make sure is populated http://aspnetwebstack.codeplex.com/discussions/388196
             var memoryStream = new MemoryStream();
-            var defaultHttpResponseMessageSerializer = new MessageContentHttpMessageSerializer();
-            await defaultHttpResponseMessageSerializer.Serialize(httpResponseMessage, memoryStream);
+            await MessageContentSerializer.Serialize(httpResponseMessage, memoryStream);
             memoryStream.Position = 0;
-            var httpResponseMessage2 = await defaultHttpResponseMessageSerializer.DeserializeToResponse(memoryStream);
+            var httpResponseMessage2 = await MessageContentSerializer.DeserializeToResponse(memoryStream);
 
 
             httpResponseMessage.StatusCode.ShouldBe(httpResponseMessage2.StatusCode);

@@ -90,39 +90,30 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Tavis\AddDateHeader.cs" />
-    <Compile Include="Tavis\Fixture\Controllers\CacheablePostResponseController.cs" />
-    <Compile Include="Tavis\Fixture\Controllers\CacheableResourceController.cs" />
-    <Compile Include="Tavis\Fixture\Controllers\CompressedContent.cs" />
-    <Compile Include="Tavis\Fixture\Controllers\PointAController.cs" />
-    <Compile Include="Tavis\Fixture\Controllers\PointBController.cs" />
-    <Compile Include="Tavis\Fixture\Controllers\ResourceWithEtagController.cs" />
-    <Compile Include="Tavis\Fixture\Controllers\VaryingCacheableResourceController.cs" />
-    <Compile Include="Tavis\Fixture\Controllers\VaryingCompressedContentController.cs" />
-    <Compile Include="Tavis\Fixture\Controllers\VaryStarController.cs" />
-    <Compile Include="Tavis\Fixture\TestServerFixture.cs" />
-    <Compile Include="Tavis\HttpAssert.cs" />
-    <Compile Include="Tavis\LinkExtensions.cs" />
-    <Compile Include="Tavis\RequestDirectiveTests.cs" />
-    <Compile Include="Tavis\ResponseDirectiveTests.cs" />
-    <EmbeddedResource Include="Data\Response.dat" />
-    <Compile Include="Attempt2\CacheStore\MessageContentSerialisationTests.cs" />
-    <Compile Include="Attempt2\CachingHandler2Tests.cs" />
-    <Compile Include="CacheStore\InMemoryVaryHeaderStoreTests.cs" />
-    <Compile Include="CachingHandlerTests.cs" />
-    <EmbeddedResource Include="Data\Request.dat" />
-    <Compile Include="FakeServerMessageHandler.cs" />
-    <Compile Include="Headers\CachingHeaderTests.cs" />
-    <Compile Include="CacheTests.cs" />
     <Compile Include="Helper\DeepComparer.cs" />
-    <Compile Include="Helper\ResponseHelper.cs" />
+    <Compile Include="AddDateHeader.cs" />
+    <Compile Include="Fixture\Controllers\CacheablePostResponseController.cs" />
+    <Compile Include="Fixture\Controllers\CacheableResourceController.cs" />
+    <Compile Include="Fixture\Controllers\CompressedContent.cs" />
+    <Compile Include="Fixture\Controllers\PointAController.cs" />
+    <Compile Include="Fixture\Controllers\PointBController.cs" />
+    <Compile Include="Fixture\Controllers\ResourceWithEtagController.cs" />
+    <Compile Include="Fixture\Controllers\VaryingCacheableResourceController.cs" />
+    <Compile Include="Fixture\Controllers\VaryingCompressedContentController.cs" />
+    <Compile Include="Fixture\Controllers\VaryStarController.cs" />
+    <Compile Include="Fixture\TestServerFixture.cs" />
+    <Compile Include="Helper\HttpAssert.cs" />
+    <Compile Include="LinkExtensions.cs" />
+    <Compile Include="RequestDirectiveTests.cs" />
+    <Compile Include="ResponseDirectiveTests.cs" />
+    <Compile Include="CacheStore\MessageContentSerialisationTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="CacheStore\RequestSerializationTests.cs" />
     <Compile Include="CacheStore\ResponseSerializationTests.cs" />
-    <Compile Include="ResponseValidatorTests.cs" />
-    <Compile Include="CacheStore\SerialisationTests.cs" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Data\Request.dat" />
+    <EmbeddedResource Include="Data\Response.dat" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
@@ -131,10 +122,6 @@
       <Name>HttpClient.Caching</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
-    <Content Include="Helper\Headers.txt" />
-  </ItemGroup>
-  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

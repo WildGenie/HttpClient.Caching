@@ -38,12 +38,6 @@
       <FixtureName>HttpClient.Caching.CacheStore.SerialisationTests</FixtureName>
     </FixtureTestSelector>
     <FixtureTestSelector>
-      <FixtureName>HttpClient.Caching.CacheStore.ResponseSerializationTests</FixtureName>
-    </FixtureTestSelector>
-    <FixtureTestSelector>
-      <FixtureName>HttpClient.Caching.CacheStore.RequestSerializationTests</FixtureName>
-    </FixtureTestSelector>
-    <FixtureTestSelector>
       <FixtureName>HttpClient.Caching.CacheStore.InMemoryVaryHeaderStoreTests</FixtureName>
     </FixtureTestSelector>
   </IgnoredTests>
