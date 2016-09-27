@@ -6,7 +6,7 @@ namespace HttpClient.Caching.Attempt2
     using System.Linq;
     using System.Net.Http;
     using System.Threading.Tasks;
-    using HttpClient.Caching.Attempt2.CacheStore;
+    using HttpClient.Caching.Cache;
     using Microsoft.IO;
 
     public class InMemoryCacheStore2 : ICacheStore2

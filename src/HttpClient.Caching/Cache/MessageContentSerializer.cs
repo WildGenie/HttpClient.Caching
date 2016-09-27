@@ -1,4 +1,4 @@
-﻿namespace HttpClient.Caching.Attempt2.CacheStore
+﻿namespace HttpClient.Caching.Cache
 {
     using System.IO;
     using System.Net.Http;

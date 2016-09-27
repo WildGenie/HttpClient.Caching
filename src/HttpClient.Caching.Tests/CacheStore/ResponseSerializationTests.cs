@@ -5,6 +5,7 @@
     using System.Net.Http;
     using System.Threading.Tasks;
     using HttpClient.Caching.Attempt2.CacheStore;
+    using HttpClient.Caching.Cache;
     using Shouldly;
     using Xunit;
 

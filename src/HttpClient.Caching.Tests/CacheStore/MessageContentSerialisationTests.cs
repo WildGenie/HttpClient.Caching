@@ -4,6 +4,7 @@
     using System.Linq;
     using System.Reflection;
     using System.Threading.Tasks;
+    using HttpClient.Caching.Cache;
     using HttpClient.Caching.Helper;
     using Shouldly;
     using Xunit;
