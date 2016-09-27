@@ -3,25 +3,9 @@
     using System;
     using System.Text;
 
-    [Flags]
-    public enum CachingInfo
-    {
-        NotCacheable,
-        RetrievedFromCache,
-        NotInCache,
-        CacheValidationApplied,
-        WasStale
-    }
-
-
     public class CachingHeader
     {
         public const string Name = "x-httpclient-caching";
-
-        public CachingHeader(CachingInfo cachingInfo)
-        {
-            
-        }
 
         public bool? WasStale { get; set; }
 
@@ -70,7 +54,7 @@
             }
 
             cachingHeader = new CachingHeader();
-            var chunks = value.Split(new[] {";"}, StringSplitOptions.None);
+            var chunks = value.Split(new[] { ";" }, StringSplitOptions.None);
 
             foreach (var chunk in chunks)
             {

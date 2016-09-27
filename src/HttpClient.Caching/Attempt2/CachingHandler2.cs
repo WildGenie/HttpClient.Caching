@@ -69,7 +69,7 @@
             {
                 response = await cacheEntry.GetCachedResponse();
 
-                cachingHeader.RetrievedFromCache = true;
+                //cachingHeader.RetrievedFromCache = true;
             }
 
             /*if (!IsResponseCacheable(response))
@@ -81,7 +81,7 @@
                 // Add to cache
             }*/
 
-            response.Headers.Add(CachingHeader.Name, cachingHeader.ToString());
+            //response.Headers.Add(CachingHeader.Name, cachingHeader.ToString());
             return response;
         }
 
