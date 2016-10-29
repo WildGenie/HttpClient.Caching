@@ -44,7 +44,6 @@
             // Process the request as normal
             var response = await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
 
-
             // If the current representation is still current, then freshen the headers
             if (response.StatusCode == HttpStatusCode.NotModified)
             {

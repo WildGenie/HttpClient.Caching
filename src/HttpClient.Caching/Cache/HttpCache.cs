@@ -104,7 +104,6 @@
             // Only cache responses from methods that allow their responses to be cached
             if (!CacheableMethods.ContainsKey(response.RequestMessage.Method)) return false;
             
-            
             // Ensure that storing is not explicitly prohibited
             if (response.RequestMessage.Headers.CacheControl != null && response.RequestMessage.Headers.CacheControl.NoStore) return false;
 
@@ -125,12 +124,21 @@
                 }
 
             }
-     
-            if (response.Content != null && response.Content.Headers.Expires != null) return true;
+
+            if(response.Content?.Headers.Expires != null)
+            {
+                return true;
+            }
             if (cacheControlHeaderValue != null)
             {
-                if (cacheControlHeaderValue.MaxAge != null) return true;
-                if (cacheControlHeaderValue.SharedMaxAge != null) return true;
+                if(cacheControlHeaderValue.MaxAge != null)
+                {
+                    return true;
+                }
+                if(cacheControlHeaderValue.SharedMaxAge != null)
+                {
+                    return true;
+                }
             }
 
             var sc = (int) response.StatusCode;
