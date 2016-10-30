@@ -12,6 +12,7 @@
     public class HttpCache
     {
         private readonly IContentStore _contentStore;
+        private readonly bool _isShared;
         private readonly GetUtcNow _getUtcNow;
         public readonly Func<HttpResponseMessage, bool> StoreBasedOnHeuristics = (r) => false;
         public readonly Dictionary<HttpMethod, object> CacheableMethods = new Dictionary<HttpMethod, object>
@@ -21,13 +22,12 @@
             {HttpMethod.Post, null}
         };
 
-        public HttpCache(IContentStore contentStore, GetUtcNow getUtcNow = null)
+        public HttpCache(IContentStore contentStore, bool isShared = false, GetUtcNow getUtcNow = null)
         {
             _contentStore = contentStore;
+            _isShared = isShared;
             _getUtcNow = getUtcNow ?? (() => DateTime.UtcNow);
         }
-
-        public bool SharedCache { get; set; }
 
         public async Task<CacheQueryResult> QueryCacheAsync(HttpRequestMessage request)
         {
@@ -52,7 +52,8 @@
             var response = await _contentStore.GetResponse(selectedEntry.VariantId).ConfigureAwait(false);
 
             // Do caching directives require that we revalidate it regardless of freshness?
-            var requestCacheControl = request.Headers.CacheControl ?? new CacheControlHeaderValue();
+            var cacheControlHeaderValue = request.Headers.CacheControl ?? new CacheControlHeaderValue();
+            var requestCacheControl = cacheControlHeaderValue;
             if ((requestCacheControl.NoCache || selectedEntry.CacheControl.NoCache))
             {
                 return CacheQueryResult.Revalidate(this, selectedEntry, response);
@@ -102,17 +103,30 @@
         public bool CanStore(HttpResponseMessage response)
         {
             // Only cache responses from methods that allow their responses to be cached
-            if (!CacheableMethods.ContainsKey(response.RequestMessage.Method)) return false;
+            if(!CacheableMethods.ContainsKey(response.RequestMessage.Method))
+            {
+                return false;
+            }
             
             // Ensure that storing is not explicitly prohibited
-            if (response.RequestMessage.Headers.CacheControl != null && response.RequestMessage.Headers.CacheControl.NoStore) return false;
+            if(response.RequestMessage.Headers.CacheControl != null &&
+               response.RequestMessage.Headers.CacheControl.NoStore)
+            {
+                return false;
+            }
 
             var cacheControlHeaderValue = response.Headers.CacheControl;
-            if (cacheControlHeaderValue != null && cacheControlHeaderValue.NoStore) return false;
-
-            if (SharedCache)
+            if(cacheControlHeaderValue != null && cacheControlHeaderValue.NoStore)
             {
-                if (cacheControlHeaderValue != null && cacheControlHeaderValue.Private) return false;
+                return false;
+            }
+
+            if (_isShared)
+            {
+                if(cacheControlHeaderValue != null && cacheControlHeaderValue.Private)
+                {
+                    return false;
+                }
                 if (response.RequestMessage.Headers.Authorization != null )
                 {
                     if (cacheControlHeaderValue == null || !(cacheControlHeaderValue.MustRevalidate
@@ -246,12 +260,14 @@
             }
         }
 
-        public TimeSpan CalculateAge(HttpResponseMessage response)
+        private TimeSpan CalculateAge(HttpResponseMessage response)
         {
             var age = _getUtcNow() - response.Headers.Date.Value;
-            if (age.TotalMilliseconds < 0) age = new TimeSpan(0);
-            
-            return new TimeSpan(0, 0, (int) Math.Round(age.TotalSeconds));;
+            if(age.TotalMilliseconds < 0)
+            {
+                age = new TimeSpan(0);
+            }
+            return new TimeSpan(0, 0, (int) Math.Round(age.TotalSeconds));
         }
     }
 }
