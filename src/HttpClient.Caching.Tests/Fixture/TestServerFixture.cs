@@ -1,4 +1,4 @@
-﻿namespace HttpCacheTests.Fixture
+﻿namespace HttpClient.Caching.Fixture
 {
     using System;
     using System.Net.Http;
@@ -20,7 +20,7 @@
             var httpServer = new HttpServer(config);
 
             var baseAddress = new Uri($"http://{Environment.MachineName}:1001");
-            var httpCache = new HttpCache(new InMemoryContentStore(), getUtcNow);
+            var httpCache = new HttpCache(new InMemoryContentStore(), getUtcNow: getUtcNow);
             var clientHandler = new HttpCacheHandler(httpServer, httpCache);
 
             Client = new HttpClient(clientHandler) { BaseAddress = baseAddress };

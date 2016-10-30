@@ -6,6 +6,7 @@
     using System.Net.Http.Headers;
     using System.Threading.Tasks;
     using HttpCacheTests.Fixture;
+    using HttpClient.Caching.Fixture;
     using HttpClient.Caching.Helper;
     using Tavis;
     using Xunit;
@@ -19,27 +20,6 @@
         {
             _fixture = new TestServerFixture();
             _client = _fixture.Client;
-        }
-
-        [Fact]
-        public async Task Private_caching_a_POST_response()
-        {
-            // Cache-Control: max-age=5
-
-            var response = await _client.PostAsync("/CacheablePostResponse", new StringContent("Here is a message"));
-                // Server round trip
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            HttpAssert.FromServer(response);
-
-            var response2 = await _client.GetAsync("/CacheablePostResponse"); // No round trip
-            Assert.Equal(HttpStatusCode.OK, response2.StatusCode);
-            HttpAssert.FromCache(response2);
-
-            _fixture.TimeTravel(7); // Pause for resource to expire
-
-            var response3 = await _client.GetAsync("/CacheablePostResponse"); // Server round trip
-            Assert.Equal(HttpStatusCode.OK, response3.StatusCode);
-            HttpAssert.FromServer(response3);
         }
 
         [Fact]

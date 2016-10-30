@@ -6,6 +6,7 @@
     using System.Net.Http.Headers;
     using System.Threading.Tasks;
     using HttpCacheTests.Fixture;
+    using HttpClient.Caching.Fixture;
     using HttpClient.Caching.Helper;
     using Xunit;
 
