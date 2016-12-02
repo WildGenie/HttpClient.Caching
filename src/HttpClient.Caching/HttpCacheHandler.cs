@@ -60,6 +60,9 @@
             {
                 if (response.Content != null)
                 {
+                    var stream = await response.Content.ReadAsStreamAsync();
+                    var streamContent = new StreamContent(stream);
+                    response.Content = streamContent;
                     await response.Content.LoadIntoBufferAsync().ConfigureAwait(false);
                 }
                 await _httpCache.StoreResponseAsync(response).ConfigureAwait(false);
