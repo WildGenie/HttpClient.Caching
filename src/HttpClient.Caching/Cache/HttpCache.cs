@@ -10,13 +10,16 @@
     using System.Threading;
     using System.Threading.Tasks;
     using HttpClient.Caching;
+    using HttpClient.Caching.Infrastructure;
 
-    public class HttpCache
+    public class HttpCache : IDisposable
     {
         private readonly IContentStore _contentStore;
         private readonly string _cachePath;
         private readonly bool _isShared;
         private readonly GetUtcNow _getUtcNow;
+        private readonly TaskQueue _taskQueue = new TaskQueue();
+
         public readonly Func<HttpResponseMessage, bool> StoreBasedOnHeuristics = r => false;
         public readonly Dictionary<HttpMethod, object> CacheableMethods = new Dictionary<HttpMethod, object>
         {
@@ -34,6 +37,15 @@
             _cachePath = cachePath;
             _isShared = isShared;
             _getUtcNow = getUtcNow ?? (() => DateTime.UtcNow);
+
+            if (!Directory.Exists(cachePath))
+            {
+                Directory.CreateDirectory(cachePath);
+
+                // TODO lock file to prevent directory being deleted or a second instance leveraging.
+            }
+
+            // TODO Delete all .tmp files? They're dead Jim.
         }
 
         public async Task<CacheQueryResult> QueryCacheAsync(HttpRequestMessage request)
@@ -82,7 +94,6 @@
                 {
                     return CacheQueryResult.ReturnStored(this, selectedEntry,response);    
                 }
-                
             }
 
             // Did the client say we can serve it stale?
@@ -208,11 +219,17 @@
             }
         }
 
-        public async Task<HttpContent> CacheContent(HttpContent sourceContent)
+        public async Task<HttpContent> CacheContent(HttpResponseMessage response)
         {
-            var stream = await sourceContent.ReadAsStreamAsync();
-            stream = new FancyStream(stream, _cachePath);
+            var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+            stream = new FancyStream(stream, _cachePath,
+                 fileName => { _taskQueue.Enqueue(() => HandleCompleted(response, fileName)); });
             return new StreamContent(stream);
+        }
+
+        private Task HandleCompleted(HttpResponseMessage response, string filename)
+        {
+            return StoreResponseAsync(response);
         }
 
         private static CacheEntry MatchVariant(HttpRequestMessage request, IEnumerable<CacheEntry> cacheEntryList)
@@ -274,6 +291,11 @@
             }
         }
 
+        public void Dispose()
+        {
+            _taskQueue.Dispose();
+        }
+
         private TimeSpan CalculateAge(HttpResponseMessage response)
         {
             var age = _getUtcNow() - response.Headers.Date.Value;
@@ -289,17 +311,14 @@
             private readonly string _fileName;
             private readonly FileStream _fileStream;
             private readonly Stream _inner;
+            private readonly Action<string> _onComplete;
             private readonly string _tempFileName;
 
-            public FancyStream(Stream inner, string path)
+            public FancyStream(Stream inner, string cachePath, Action<string> onComplete)
             {
                 _inner = inner;
-                if(!Directory.Exists(path))
-                {
-                    Directory.CreateDirectory(path);
-                }
-
-                _fileName = Path.Combine(path, Guid.NewGuid().ToString());
+                _onComplete = onComplete;
+                _fileName = Path.Combine(cachePath, Guid.NewGuid().ToString());
                 _tempFileName = $"{_fileName}.tmp";
                 _fileStream = File.Open(_tempFileName, FileMode.CreateNew, FileAccess.Write, FileShare.None);
             }
@@ -321,6 +340,7 @@
             public override void Flush()
             {
                 _inner.Flush();
+                _fileStream.Flush();
             }
 
             public override long Seek(long offset, SeekOrigin origin)
@@ -335,7 +355,19 @@
 
             public override int Read(byte[] buffer, int offset, int count)
             {
-                return _inner.Read(buffer, offset, count);
+                var read = _inner.Read(buffer, offset, count);
+                _fileStream.Write(buffer, offset, read);
+
+                if (read == 0)
+                {
+                    Complete();
+                }
+                else
+                {
+                    _fileStream.Write(buffer, offset, read);
+                }
+
+                return read;
             }
 
             public override void Write(byte[] buffer, int offset, int count)
@@ -347,15 +379,29 @@
                 CancellationToken cancellationToken)
             {
                 var read = await _inner.ReadAsync(buffer, offset, count, cancellationToken);
-                await _fileStream.WriteAsync(buffer, offset, read, cancellationToken);
+
+                if (read == 0)
+                {
+                    Complete();
+                }
+                else
+                {
+                    await _fileStream.WriteAsync(buffer, offset, read, cancellationToken);
+                }
+
                 return read;
             }
 
             public override void Close()
             {
                 _inner.Close();
+            }
+
+            private void Complete()
+            {
                 _fileStream.Close();
                 File.Move(_tempFileName, _fileName);
+                _onComplete(_fileName);
             }
         }
     }

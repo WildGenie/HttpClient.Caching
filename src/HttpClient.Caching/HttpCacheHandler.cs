@@ -61,11 +61,10 @@
             {
                 if (response.Content != null)
                 {
-                    response.Content = await _httpCache.CacheContent(response.Content);
+                    response.Content = await _httpCache.CacheContent(response).ConfigureAwait(false);
                 }
-                await _httpCache.StoreResponseAsync(response).ConfigureAwait(false);
             }
-
+ 
             return response;
         }
 

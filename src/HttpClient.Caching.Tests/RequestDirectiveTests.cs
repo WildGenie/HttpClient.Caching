@@ -5,7 +5,6 @@
     using System.Net.Http;
     using System.Net.Http.Headers;
     using System.Threading.Tasks;
-    using HttpCacheTests.Fixture;
     using HttpClient.Caching.Fixture;
     using HttpClient.Caching.Helper;
     using Xunit;
@@ -56,6 +55,7 @@
             };
 
             var response3 = await _client.SendAsync(request2);
+
             Assert.Equal(HttpStatusCode.OK, response3.StatusCode);
             HttpAssert.FromServer(response3);
         }
