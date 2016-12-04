@@ -3,15 +3,18 @@
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
+    using System.IO;
     using System.Linq;
     using System.Net.Http;
     using System.Net.Http.Headers;
+    using System.Threading;
     using System.Threading.Tasks;
     using HttpClient.Caching;
 
     public class HttpCache
     {
         private readonly IContentStore _contentStore;
+        private readonly string _cachePath;
         private readonly bool _isShared;
         private readonly GetUtcNow _getUtcNow;
         public readonly Func<HttpResponseMessage, bool> StoreBasedOnHeuristics = r => false;
@@ -22,9 +25,13 @@
             {HttpMethod.Post, null}
         };
 
-        public HttpCache(IContentStore contentStore, bool isShared = false, GetUtcNow getUtcNow = null)
+        public HttpCache(IContentStore contentStore,
+            string cachePath = "cache",
+            bool isShared = false,
+            GetUtcNow getUtcNow = null)
         {
             _contentStore = contentStore;
+            _cachePath = cachePath;
             _isShared = isShared;
             _getUtcNow = getUtcNow ?? (() => DateTime.UtcNow);
         }
@@ -204,6 +211,7 @@
         public async Task<HttpContent> CacheContent(HttpContent sourceContent)
         {
             var stream = await sourceContent.ReadAsStreamAsync();
+            stream = new FancyStream(stream, _cachePath);
             return new StreamContent(stream);
         }
 
@@ -274,6 +282,81 @@
                 age = new TimeSpan(0);
             }
             return new TimeSpan(0, 0, (int) Math.Round(age.TotalSeconds));
+        }
+
+        private class FancyStream : Stream
+        {
+            private readonly string _fileName;
+            private readonly FileStream _fileStream;
+            private readonly Stream _inner;
+            private readonly string _tempFileName;
+
+            public FancyStream(Stream inner, string path)
+            {
+                _inner = inner;
+                if(!Directory.Exists(path))
+                {
+                    Directory.CreateDirectory(path);
+                }
+
+                _fileName = Path.Combine(path, Guid.NewGuid().ToString());
+                _tempFileName = $"{_fileName}.tmp";
+                _fileStream = File.Open(_tempFileName, FileMode.CreateNew, FileAccess.Write, FileShare.None);
+            }
+
+            public override bool CanRead => _inner.CanRead;
+
+            public override bool CanSeek => _inner.CanSeek;
+
+            public override bool CanWrite => _inner.CanWrite;
+
+            public override long Length => _inner.Length;
+
+            public override long Position
+            {
+                get { return _inner.Position; }
+                set { _inner.Position = value; }
+            }
+
+            public override void Flush()
+            {
+                _inner.Flush();
+            }
+
+            public override long Seek(long offset, SeekOrigin origin)
+            {
+                return _inner.Seek(offset, origin);
+            }
+
+            public override void SetLength(long value)
+            {
+                _inner.SetLength(value);
+            }
+
+            public override int Read(byte[] buffer, int offset, int count)
+            {
+                return _inner.Read(buffer, offset, count);
+            }
+
+            public override void Write(byte[] buffer, int offset, int count)
+            {
+                _inner.Write(buffer, offset, count);
+            }
+
+            public override async Task<int> ReadAsync(byte[] buffer, int offset, int count,
+                CancellationToken cancellationToken)
+            {
+                var read = await _inner.ReadAsync(buffer, offset, count, cancellationToken);
+                await _fileStream.WriteAsync(buffer, offset, read, cancellationToken);
+                return read;
+            }
+
+            public override void Close()
+            {
+                _inner.Close();
+                _fileStream.Close();
+                File.Move(_tempFileName, _fileName);
+            }
         }
     }
 }
