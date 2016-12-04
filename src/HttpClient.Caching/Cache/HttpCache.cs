@@ -14,7 +14,7 @@
         private readonly IContentStore _contentStore;
         private readonly bool _isShared;
         private readonly GetUtcNow _getUtcNow;
-        public readonly Func<HttpResponseMessage, bool> StoreBasedOnHeuristics = (r) => false;
+        public readonly Func<HttpResponseMessage, bool> StoreBasedOnHeuristics = r => false;
         public readonly Dictionary<HttpMethod, object> CacheableMethods = new Dictionary<HttpMethod, object>
         {
             {HttpMethod.Get, null},
