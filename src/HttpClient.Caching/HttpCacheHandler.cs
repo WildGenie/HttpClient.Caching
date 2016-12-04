@@ -17,7 +17,8 @@
         }
 
         // Process Request and Response
-        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,
+        protected override async Task<HttpResponseMessage> SendAsync(
+            HttpRequestMessage request,
             CancellationToken cancellationToken)
         {
             // Check if there is an cached representation that matches the request
@@ -30,7 +31,7 @@
             }
 
             // If the client requested only cached responses, but we got here, then return Gatewaytimeout 
-            if ((request.Headers.CacheControl != null) && request.Headers.CacheControl.OnlyIfCached)
+            if (request.Headers.CacheControl != null && request.Headers.CacheControl.OnlyIfCached)
             {
                 return CreateGatewayTimeoutResponse(request); // https://tools.ietf.org/html/rfc7234#section-5.2.1.7
             }
@@ -60,10 +61,7 @@
             {
                 if (response.Content != null)
                 {
-                    var stream = await response.Content.ReadAsStreamAsync();
-                    var streamContent = new StreamContent(stream);
-                    response.Content = streamContent;
-                    await response.Content.LoadIntoBufferAsync().ConfigureAwait(false);
+                    response.Content = await _httpCache.CacheContent(response.Content);
                 }
                 await _httpCache.StoreResponseAsync(response).ConfigureAwait(false);
             }

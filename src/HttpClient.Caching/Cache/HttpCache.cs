@@ -201,6 +201,12 @@
             }
         }
 
+        public async Task<HttpContent> CacheContent(HttpContent sourceContent)
+        {
+            var stream = await sourceContent.ReadAsStreamAsync();
+            return new StreamContent(stream);
+        }
+
         private static CacheEntry MatchVariant(HttpRequestMessage request, IEnumerable<CacheEntry> cacheEntryList)
         {
             var selectedEntry = cacheEntryList?
